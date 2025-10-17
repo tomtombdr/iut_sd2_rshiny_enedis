@@ -1,4 +1,4 @@
 # projet-RShiny
-projet RShiny sur les données de savoie/haute-savoie de l'ADEME
+Projet RShiny sur les données DPE de savoie/haute-savoie avec la source de données de l'ADEME.
 
 ajout de code
