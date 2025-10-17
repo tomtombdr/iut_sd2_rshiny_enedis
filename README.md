@@ -4,3 +4,5 @@ Projet RShiny sur les données DPE de savoie/haute-savoie avec la source de donn
 ajout de code
 
 Monsieur essentiel a un problème d'ego
+
+OUI
