@@ -1,6 +1,8 @@
 # Projet-RShiny-Savoie-Haute-Savoie
 
-Projet RShiny sur les données DPE de savoie/haute-savoie avec la source de données de l'ADEME.
+Projet RShiny sur les données DPE de Savoie et Haute-Savoie avec la source de données de l'ADEME.
+
+## Introduction au sujet :
 
 Ce projet présente une étude statistique sur les données DPE entre les département de la Savoie et de la Haute-Savoie. La problématique sera donc de comparer ces départements limitrophes en termes de rapport énergétique en prennant connaissance du contexte économique et social de chacun des départements.
 
