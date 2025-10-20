@@ -4,16 +4,12 @@ library(jsonlite)
 
 base_url <- "https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines"
 # Paramètres de la requête
-annee = c(2021,2022,2023,2024,2025)
-mois = c(01,02,03,04,05,06,07,08,09,10,11,12)
 
-for (i in annee)
-  for(j in mois)
 params <- list(
   page = 1,
   size = 10000,
   select = "etiquette_dpe,etiquette_ges,date_reception_dpe,annee_construction,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,besoin_ecs_logement,conso_refroidissement_annuel,categorie_enr",
-  qs = 'code_departement_ban:("73" or "74") AND date_reception_dpe:['annee'-'mois'-01 AND 'annee'-'mois'-01]'
+  qs = 'code_departement_ban:"73"'
 ) 
 
 # Encodage des paramètres
@@ -35,4 +31,5 @@ print(content$total)
 # Afficher les données récupérées
 df <- content$result
 dim(df)
+
 View(df)
