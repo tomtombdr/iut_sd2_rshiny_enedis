@@ -2,7 +2,7 @@ install.packages(c("httr", "jsonlite"))
 library(httr)
 library(jsonlite)
 
-base_url <- "https://data.ademe.fr/datasets/dpe02neuf/api-doc?operation=readLines"
+base_url <- "https://data.ademe.fr/data-fair/api/v1/datasets/dpe02neuf"
 # Paramètres de la requête
 
 params <- list(
@@ -31,4 +31,5 @@ print(content$total)
 # Afficher les données récupérées
 df <- content$result
 dim(df)
+
 View(df)
