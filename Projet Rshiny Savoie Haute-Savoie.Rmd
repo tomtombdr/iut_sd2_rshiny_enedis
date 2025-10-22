@@ -1,6 +1,16 @@
 ---
-title: "Projet Rshiny Savoie Haute-Savoie"
+title: "Rapport statistique sur les DPE de la Savoie et la Haute-Savoie"
 output: html_document
 date: "2025-10-16"
 
+---
+
+---
+#Introduction
+
+Dans un contexte de transition énergétique et de lutte contre le réchauffement climatique, l'impact énergétique des bâtiments est un enjeu majeur pour les territoires. Le Diagnostic de Performance Énergétique (DPE) est un outil essentiel permettant d’évaluer la consommation d’énergie et l’impact environnemental des logements. Il permet d'étudier l'ensemble du parc immobilier et sert de référence pour orienter les politiques publiques d’efficacité énergétique, de rénovation et de réduction des émissions de gaz à effet de serre.
+
+Ce rapport statistique comparare les DPE réalisés dans les départements de la Savoie et de la Haute-Savoie. Ces deux territoires de la région Auvergne-Rhône-Alpes présentent de nombreuses similitudes (reliefs montagneux, fortes activités saisonnières, beaucoup de résidences secondaires) mais aussi de fortes différences en termes de type de bâtiment, de densité urbaine, de PIB par habitant et de conditions climatiques locales. Ces facteurs peuvent influencer directement la performance énergétique des logements et la répartition des classes DPE.
+
+On peut donc se poser la question de savoir dans quelle mesure la performance énergétique des logements diffère-t-elle entre la Savoie et la Haute-Savoie, et quels facteurs (climatiques, structurels ou socio-économiques) peuvent expliquer ces écarts observés dans les DPE ?
 ---
