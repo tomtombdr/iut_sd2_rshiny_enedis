@@ -14,13 +14,7 @@ ui <- fluidPage(
   tabsetPanel(
     
     # Onglet 1
-    tabPanel("Onglet 1",
-             m <- leaflet() %>%
-               addTiles() %>%
-               addMarkers(
-                 lng = df_total$coordonnee_cartographique_y_ban, lat = df_total$coordonnee_cartographique_x_ban
-               ),
-             m
+    tabPanel("Onglet 1"
              ), 
 
     # Onglet 2
