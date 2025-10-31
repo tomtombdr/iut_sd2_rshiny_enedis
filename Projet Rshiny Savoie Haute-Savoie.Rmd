@@ -54,3 +54,5 @@ df_maison = df_total[df_total$type_batiment == "maison",]
       main = "Répartition des surfaces habitables des maisons du 74",
       col = "red")
 ```
+
+En ce qui concerne les DPE, le constat est 
