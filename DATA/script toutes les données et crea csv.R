@@ -1,9 +1,11 @@
-install.packages(c("httr", "jsonlite"))
+#install.packages(c("httr", "jsonlite"))
 library(httr)
 library(jsonlite)
 
 base_url <- "https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines"
 # Paramètres de la requête
+
+df_total <- data.frame()
 
 params <- list(
   page = 1,
@@ -134,7 +136,8 @@ df_total <- rbind(df, df_total)
 #création du .csv
 write.csv(
   x = df_total, 
-  file = "données_porjet_DPE.csv",
+  file = "données_projet_DPE.csv",
   row.names = FALSE,       
   fileEncoding = "UTF-8"   
 )
+
