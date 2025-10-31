@@ -1,5 +1,5 @@
 # app.R
-#install.packages("ggplot2","leaflet")
+#install.packages("ggplot2","leaflet","shiny")
 library(ggplot2)
 library(shiny)
 library(leaflet)
