@@ -4,7 +4,7 @@ library(ggplot2)
 library(shiny)
 library(leaflet)
 library(dplyr)
-df_total <- read.csv(file = "DATA/données_projet_DPE.csv", sep=";")
+df_total <- read.csv2(file = "DATA/données_projet_DPE.csv")
 
 # --- Définition de l'Interface Utilisateur (UI) ---
 ui <- fluidPage(
