@@ -1,9 +1,10 @@
 # app.R
-#install.packages("ggplot2","leaflet","shiny")
+#install.packages("ggplot2","leaflet","shiny","dplyr")
 library(ggplot2)
 library(shiny)
 library(leaflet)
-df_total <- read.csv(file = "DATA/données_projet_DPE.csv")
+library(dplyr)
+df_total <- read.csv(file = "DATA/données_projet_DPE.csv", sep=";")
 
 # --- Définition de l'Interface Utilisateur (UI) ---
 ui <- fluidPage(
