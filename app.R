@@ -93,16 +93,21 @@ server <- function(input, output) {
     df_maison = df_total[df_total$type_batiment == "maison",]
     df_maison = df_maison[df_maison$surface_habitable_logement <=350,] 
     df_maison_73 = df_maison[grepl("^73", df_maison$code_insee_ban), ]
-    hist(
-      df_maison_73$surface_habitable_logement,
-      breaks = seq(0, 350, length.out = 8), 
-      xlim = c(0, 350), 
-      ylim = c(0, 2000), 
-      xlab = "Surface habitable",
-      ylab = "Effectifs",
-      main = "Répartition des surfaces habitables des maisons du 73",
-      col = "red"
-    )
+    
+    ggplot(df_maison_73, aes(x = surface_habitable_logement)) +
+      geom_histogram(
+        breaks = seq(0, 350, length.out = 8), 
+        fill = "red", 
+        color = "black"
+      ) +
+      scale_x_continuous(limits = c(0, 350)) +
+      scale_y_continuous(limits = c(0, 2000)) +
+      labs(
+        title = "Répartition des surfaces habitables des maisons du 73",
+        x = "Surface habitable",
+        y = "Effectifs"
+      ) +
+      theme_minimal(base_size = 14)
   })
   
   output$Répartition_surface_maison_74 <- renderPlot({
@@ -110,16 +115,21 @@ server <- function(input, output) {
     df_maison = df_total[df_total$type_batiment == "maison",]
     df_maison = df_maison[df_maison$surface_habitable_logement <=350,] 
     df_maison_74 = df_maison[grepl("^74", df_maison$code_insee_ban), ]
-    hist(
-      df_maison_74$surface_habitable_logement,
-      breaks = seq(0, 350, length.out = 8), 
-      xlim = c(0, 350), 
-      ylim = c(0, 2000), 
-      xlab = "Surface habitable",
-      ylab = "Effectifs",
-      main = "Répartition des surfaces habitables des maisons du 74",
-      col = "red"
-    )
+    
+    ggplot(df_maison_74, aes(x = surface_habitable_logement)) +
+      geom_histogram(
+        breaks = seq(0, 350, length.out = 8), 
+        fill = "red", 
+        color = "black"
+      ) +
+      scale_x_continuous(limits = c(0, 350)) +
+      scale_y_continuous(limits = c(0, 2000)) +
+      labs(
+        title = "Répartition des surfaces habitables des maisons du 74",
+        x = "Surface habitable",
+        y = "Effectifs"
+      ) +
+      theme_minimal(base_size = 14)
   })
   
   output$dpe_map <- renderLeaflet({
