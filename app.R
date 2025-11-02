@@ -31,6 +31,7 @@ ui <- fluidPage(
     
     # Panneau de la barre latérale pour les filtres (commun à tous les onglets)
     sidebarPanel(
+      width = 3, # Rendre la sidebar plus fine (3/12 de la largeur)
       h4("Filtres de Données"),
       
       # 1. Filtre par code départemental
@@ -53,6 +54,7 @@ ui <- fluidPage(
     
     # Panneau principal pour les onglets
     mainPanel(
+      width = 9, # Augmenter la largeur du panneau principal (9/12 de la largeur)
       # Création des onglets (tabsetPanel)
       tabsetPanel(
         
@@ -176,7 +178,7 @@ server <- function(input, output) {
     ggplot(df_maison_73, aes(x = surface_habitable_logement)) +
       geom_histogram(
         breaks = seq(0, 350, length.out = 8), 
-        fill = "#5DADE2", # Nouvelle couleur pour la distinction
+        fill = "red", # Nouvelle couleur pour la distinction
         color = "black"
       ) +
       scale_x_continuous(limits = c(0, 350)) +
@@ -212,7 +214,7 @@ server <- function(input, output) {
     ggplot(df_maison_74, aes(x = surface_habitable_logement)) +
       geom_histogram(
         breaks = seq(0, 350, length.out = 8), 
-        fill = "#A569BD", # Nouvelle couleur pour la distinction
+        fill = "red", # Nouvelle couleur pour la distinction
         color = "black"
       ) +
       scale_x_continuous(limits = c(0, 350)) +
