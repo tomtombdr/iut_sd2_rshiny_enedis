@@ -34,7 +34,8 @@ ui <- fluidPage(
     ),
     
     # Onglet 3
-    tabPanel("Onglet 3") 
+    tabPanel("Corrélation",
+             plotOutput("Correlation_ges_dpe"))
   )
 )
 
@@ -187,6 +188,23 @@ server <- function(input, output) {
         clusterOptions = markerClusterOptions() # Regroupement des marqueurs
       )
   })
+    output$Correlation_ges_dpe <- renderPlot({
+    
+    ggplot(df_total, aes(x = etiquette_dpe, y = etiquette_ges)) +
+      geom_count(color = "red", alpha = 0.6) +
+      scale_size_area(max_size = 15) +
+      labs(
+        title = "Corrélation entre étiquette DPE et GES",
+        x = "Étiquette DPE",
+        y = "Étiquette GES",
+        size = "Effectif"
+      ) +
+      theme_light(base_size = 14) +
+      theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold")
+      )
+    })
 }
 
 # --- Exécution de l'application ---
