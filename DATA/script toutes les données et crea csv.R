@@ -10,7 +10,7 @@ df_total <- data.frame()
 params <- list(
   page = 1,
   size = 10000,
-  select = "annee_construction,etiquette_dpe,etiquette_ges,date_reception_dpe,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,categorie_enr",
+  select = "code_postal_ban,annee_construction,etiquette_dpe,etiquette_ges,date_reception_dpe,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,categorie_enr",
   qs = 'code_departement_ban:"74"'
 ) 
 
@@ -46,7 +46,7 @@ base_url <- "https://data.ademe.fr/data-fair/api/v1/datasets/dpe02neuf/lines"
 params <- list(
   page = 1,
   size = 10000,
-  select = "annee_construction,etiquette_dpe,etiquette_ges,date_reception_dpe,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,categorie_enr",
+  select = "code_postal_ban,annee_construction,etiquette_dpe,etiquette_ges,date_reception_dpe,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,categorie_enr",
   qs = 'code_departement_ban:"74"'
 ) 
 
@@ -81,7 +81,7 @@ base_url <- "https://data.ademe.fr/data-fair/api/v1/datasets/dpe03existant/lines
 params <- list(
   page = 1,
   size = 10000,
-  select = "annee_construction,etiquette_dpe,etiquette_ges,date_reception_dpe,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,categorie_enr",
+  select = "code_postal_ban,annee_construction,etiquette_dpe,etiquette_ges,date_reception_dpe,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,categorie_enr",
   qs = 'code_departement_ban:"73"'
 ) 
 
@@ -116,7 +116,7 @@ base_url <- "https://data.ademe.fr/data-fair/api/v1/datasets/dpe02neuf/lines"
 params <- list(
   page = 1,
   size = 10000,
-  select = "annee_construction,etiquette_dpe,etiquette_ges,date_reception_dpe,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,categorie_enr",
+  select = "code_postal_ban,annee_construction,etiquette_dpe,etiquette_ges,date_reception_dpe,type_batiment,type_installation_chauffage,type_installation_ecs,hauteur_sous_plafond,surface_habitable_logement,code_insee_ban,coordonnee_cartographique_x_ban,coordonnee_cartographique_y_ban,nom_commune_ban,categorie_enr",
   qs = 'code_departement_ban:"73"'
 ) 
 
