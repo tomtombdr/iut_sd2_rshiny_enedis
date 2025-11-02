@@ -33,6 +33,9 @@ print(content$total)
 # Afficher les données récupérées
 df <- content$result
 
+#ajout colonne neuf ou ancien
+df$neufancien <- "ancien"
+
 # création du dataset final
 
 df_total <- df
@@ -66,6 +69,9 @@ print(content$total)
 # Afficher les données récupérées
 df <- content$result
 
+#ajout colonne neuf ou ancien
+df$neufancien <- "neuf"
+
 # ajout de des données au dataset final
 df_total <- rbind(df, df_total)
 
@@ -98,6 +104,9 @@ print(content$total)
 # Afficher les données récupérées
 df <- content$result
 
+#ajout colonne neuf ou ancien
+df$neufancien <- "ancien"
+
 # ajout de des données au dataset final
 df_total <- rbind(df, df_total)
 
@@ -129,6 +138,9 @@ print(content$total)
 
 # Afficher les données récupérées
 df <- content$result
+
+#ajout colonne neuf ou ancien
+df$neufancien <- "neuf"
 
 # ajout de des données au dataset final
 df_total <- rbind(df, df_total)
