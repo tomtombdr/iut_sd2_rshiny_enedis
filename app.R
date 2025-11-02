@@ -62,7 +62,9 @@ ui <- fluidPage(
         tabPanel("Comparaison territoire",
                  h3("Répartition des surfaces habitables des maisons"),
                  # Un seul plot pour le 73 et le 74
-                 plotOutput("Répartition_surface_maison")),
+                 plotOutput("Répartition_surface_maison"),
+                 h3("Répartition des surfaces habitables des appartements"),
+                 plotOutput("Répartition_surface_appartement")),
         
         # Onglet 2 : Carte avec clustering
         tabPanel("Carte avec clustering", 
@@ -213,9 +215,57 @@ server <- function(input, output) {
       )
   })
   
-  
-  # Les outputs pour Répartition_surface_maison_73 et Répartition_surface_maison_74 sont supprimés.
-  
+  output$Répartition_surface_appartement <- renderPlot({
+    
+    # Utiliser les données filtrées
+    df_filtered <- filtered_data()
+    
+    # Filtrer uniquement les maisons et les surfaces raisonnables
+    df_appartement = df_filtered %>%
+      filter(type_batiment == "appartement",
+             surface_habitable_logement <= 250)
+    
+    # Vérification si des données existent
+    if(nrow(df_appartement) == 0) {
+      # Retourner un graphique vide ou un message d'erreur
+      return(
+        ggplot() +
+          labs(title = "Aucune donnée de maison disponible avec les filtres actuels.") +
+          theme_void()
+      )
+    }
+    
+    # Préparation du titre en fonction du filtre départemental
+    dept_name <- switch(input$code_postal_filtre,
+                        "73" = "Savoie (73)",
+                        "74" = "Haute-Savoie (74)",
+                        "tous" = "Savoie (73) et Haute-Savoie (74)")
+    
+    plot_title <- paste("Répartition des surfaces habitables des appartements en", dept_name)
+    
+    # histogramme répartition surface habitable appartement
+    p <- ggplot(df_appartement, aes(x = surface_habitable_logement)) +
+      geom_histogram(
+        breaks = seq(0, 250, length.out = 6),
+        fill = "red",
+        color = "black"
+      )
+    
+    # Mise en forme commune
+    p +
+      scale_x_continuous(limits = c(0, 250)) +
+      labs(
+        title = plot_title,
+        x = "Surface habitable (m²)",
+        y = "Effectifs"
+      ) +
+      theme_light(base_size = 14) +
+      theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        panel.grid.minor = element_blank()
+      )
+  })
   
   # --- 4. Output pour la Carte Leaflet ---
   output$dpe_map <- renderLeaflet({
