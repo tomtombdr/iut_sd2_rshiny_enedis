@@ -107,7 +107,12 @@ server <- function(input, output) {
         x = "Surface habitable",
         y = "Effectifs"
       ) +
-      theme_minimal(base_size = 14)
+      theme_light(base_size = 14) +
+      theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        panel.grid.minor = element_blank()
+      )
   })
   
   output$Répartition_surface_maison_74 <- renderPlot({
@@ -126,10 +131,15 @@ server <- function(input, output) {
       scale_y_continuous(limits = c(0, 2000)) +
       labs(
         title = "Répartition des surfaces habitables des maisons du 74",
-        x = "Surface habitable",
+        x = "Surface habitable (m²)",
         y = "Effectifs"
       ) +
-      theme_minimal(base_size = 14)
+      theme_light(base_size = 14) +
+      theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        panel.grid.minor = element_blank()
+      )
   })
   
   output$dpe_map <- renderLeaflet({
