@@ -1,13 +1,11 @@
 # app.R
-# Installer 'sf' si ce n'est pas déjà fait : install.packages("sf")
 # install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf"))
 library(ggplot2)
 library(shiny)
 library(leaflet)
 library(dplyr)
-library(sf) # Nécessaire pour la conversion de coordonnées géographiques
+library(sf) 
 
-# Chargement du fichier CSV
 df_total <- read.csv2(file = "DATA/données_projet_DPE.csv", stringsAsFactors = FALSE) # stringsAsFactors=FALSE pour faciliter la manipulation
 
 # --- Définition de l'Interface Utilisateur (UI) ---
@@ -25,7 +23,7 @@ ui <- fluidPage(
              plotOutput("Répartition_surface_maison_74")),
     
     # Onglet 2 : Carte avec clustering
-    tabPanel("Onglet 2", # Nom d'onglet rétabli
+    tabPanel("Carte avec clustering", 
              fluidRow(
                column(12,
                       h3("Localisation de tous les logements (Clustering)", align = "center", style = "margin-top: 20px; color: #1a5276;"),
@@ -36,7 +34,7 @@ ui <- fluidPage(
     ),
     
     # Onglet 3
-    tabPanel("Onglet 3") # Nom d'onglet rétabli
+    tabPanel("Onglet 3") 
   )
 )
 
@@ -79,7 +77,7 @@ server <- function(input, output) {
       latitude = coords_wgs84[,2]
     )
     
-    # 3. FILTRAGE DES POINTS ABERRANTS (Pour exclure les points hors de France métropolitaine)
+    # 3. FILTRAGE DES POINTS ABERRANTS (Pour exclure les points hors de France métropolitaine car 203 dans le pacifique)
     data_filtered <- data_wgs84 %>%
       filter(longitude >= -5 & longitude <= 10 & 
                latitude >= 42 & latitude <= 51)
@@ -89,17 +87,17 @@ server <- function(input, output) {
       select(longitude, latitude, etiquette_dpe, surface_habitable_logement, type_batiment, everything())
   })
   
-  # --- HISTOGRAMME 73 (MODIFIÉ) ---
+ 
   output$Répartition_surface_maison_73 <- renderPlot({
     
     df_maison = df_total[df_total$type_batiment == "maison",]
-    df_maison = df_maison[df_maison$surface_habitable_logement <=350,] # MODIFICATION
+    df_maison = df_maison[df_maison$surface_habitable_logement <=350,] 
     df_maison_73 = df_maison[grepl("^73", df_maison$code_insee_ban), ]
     hist(
       df_maison_73$surface_habitable_logement,
-      breaks = seq(0, 350, length.out = 8), # MODIFICATION
-      xlim = c(0, 350), # MODIFICATION
-      ylim = c(0, 2000), # MODIFICATION
+      breaks = seq(0, 350, length.out = 8), 
+      xlim = c(0, 350), 
+      ylim = c(0, 2000), 
       xlab = "Surface habitable",
       ylab = "Effectifs",
       main = "Répartition des surfaces habitables des maisons du 73",
@@ -107,17 +105,16 @@ server <- function(input, output) {
     )
   })
   
-  # --- HISTOGRAMME 74 (MODIFIÉ) ---
   output$Répartition_surface_maison_74 <- renderPlot({
     
     df_maison = df_total[df_total$type_batiment == "maison",]
-    df_maison = df_maison[df_maison$surface_habitable_logement <=350,] # MODIFICATION
+    df_maison = df_maison[df_maison$surface_habitable_logement <=350,] 
     df_maison_74 = df_maison[grepl("^74", df_maison$code_insee_ban), ]
     hist(
       df_maison_74$surface_habitable_logement,
-      breaks = seq(0, 350, length.out = 8), # MODIFICATION
-      xlim = c(0, 350), # MODIFICATION
-      ylim = c(0, 2000), # MODIFICATION
+      breaks = seq(0, 350, length.out = 8), 
+      xlim = c(0, 350), 
+      ylim = c(0, 2000), 
       xlab = "Surface habitable",
       ylab = "Effectifs",
       main = "Répartition des surfaces habitables des maisons du 74",
@@ -125,7 +122,6 @@ server <- function(input, output) {
     )
   })
   
-  # --- CARTE LEAFLET (DÉPLACÉE DANS L'ONGLET 2) ---
   output$dpe_map <- renderLeaflet({
     data <- map_data()
     
