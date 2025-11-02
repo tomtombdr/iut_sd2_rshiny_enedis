@@ -40,13 +40,13 @@ ui <- fluidPage(
                   choices = c("Les deux" = "tous", 
                               "Savoie (73)" = "73", 
                               "Haute-Savoie (74)" = "74"),
-                  selected = "tous"),
+                  selected = "tous"), # 'tous' est la valeur par défaut
       
       # 2. Filtre par type de logement (Neuf/Ancien)
       selectInput("neufancien_filtre",
                   "Type de Logement:",
                   choices = neufancien_choices,
-                  selected = "les_deux"),
+                  selected = "les_deux"), # 'les_deux' est la valeur par défaut
       
       hr(), # Ligne de séparation
       p(em("Les graphiques et la carte ci-dessous sont mis à jour en fonction de ces filtres."))
@@ -60,9 +60,9 @@ ui <- fluidPage(
         
         # Onglet 1 : Comparaison territoire (Histogrammes modifiés)
         tabPanel("Comparaison territoire",
-                 h3("Répartition des surfaces habitables des maisons (Départements 73 et 74)"),
-                 plotOutput("Répartition_surface_maison_73"),
-                 plotOutput("Répartition_surface_maison_74")),
+                 h3("Répartition des surfaces habitables des maisons"),
+                 # Un seul plot pour le 73 et le 74
+                 plotOutput("Répartition_surface_maison")),
         
         # Onglet 2 : Carte avec clustering
         tabPanel("Carte avec clustering", 
@@ -91,14 +91,15 @@ server <- function(input, output) {
     data <- df_total
     
     # FILTRE 1: Code Postal (Département)
+    # Si 'tous' est sélectionné, on ne filtre pas
     if (input$code_postal_filtre != "tous") {
       data <- data %>%
         filter(code_dept == input$code_postal_filtre)
     }
     
     # FILTRE 2: Neuf / Ancien
+    # Si 'les_deux' est sélectionné, on ne filtre pas
     if (input$neufancien_filtre != "les_deux") {
-      # Assurez-vous que la colonne neufancien est nettoyée ou correspond aux valeurs du filtre
       # Le filtre utilise les valeurs brutes "ancien" et "neuf" du jeu de données
       data <- data %>%
         filter(neufancien == input$neufancien_filtre)
@@ -159,32 +160,48 @@ server <- function(input, output) {
   })
   
   
-  # --- 3. Outputs pour les Histogrammes (Répartitions 73 et 74) ---
-  output$Répartition_surface_maison_73 <- renderPlot({
+  # --- 3. Output pour l'Histogramme de Répartition des Surfaces (73 et/ou 74) ---
+  output$Répartition_surface_maison <- renderPlot({
     
     # Utiliser les données filtrées
     df_filtered <- filtered_data()
     
-    df_maison = df_filtered[df_filtered$type_batiment == "maison",]
-    # Filtrer la surface et le département 73
-    df_maison_73 = df_maison[df_maison$surface_habitable_logement <= 350 & 
-                               df_maison$code_dept == "73", ]
+    # Filtrer uniquement les maisons et les surfaces raisonnables
+    df_maison = df_filtered %>%
+      filter(type_batiment == "maison",
+             surface_habitable_logement <= 350)
     
-    # Si le filtre départemental n'inclut pas le 73, le graphique sera vide (ou si pas de données)
-    if(nrow(df_maison_73) == 0 || input$code_postal_filtre == "74") {
-      return(NULL) # Ne rien afficher
+    # Vérification si des données existent
+    if(nrow(df_maison) == 0) {
+      # Retourner un graphique vide ou un message d'erreur
+      return(
+        ggplot() +
+          labs(title = "Aucune donnée de maison disponible avec les filtres actuels.") +
+          theme_void()
+      )
     }
     
-    ggplot(df_maison_73, aes(x = surface_habitable_logement)) +
+    # Préparation du titre en fonction du filtre départemental
+    dept_name <- switch(input$code_postal_filtre,
+                        "73" = "Savoie (73)",
+                        "74" = "Haute-Savoie (74)",
+                        "tous" = "Savoie (73) et Haute-Savoie (74)")
+    
+    plot_title <- paste("Répartition des surfaces habitables des maisons en", dept_name)
+    
+    # histogramme répartition surface habitable maison
+    p <- ggplot(df_maison, aes(x = surface_habitable_logement)) +
       geom_histogram(
-        breaks = seq(0, 350, length.out = 8), 
-        fill = "red", # Nouvelle couleur pour la distinction
+        breaks = seq(0, 350, length.out = 8),
+        fill = "red",
         color = "black"
-      ) +
+      )
+    
+    # Mise en forme commune
+    p +
       scale_x_continuous(limits = c(0, 350)) +
-      scale_y_continuous(limits = c(0, max(2000, max(table(cut(df_maison_73$surface_habitable_logement, breaks = seq(0, 350, length.out = 8))))*1.1, na.rm = TRUE))) +
       labs(
-        title = "Répartition des surfaces habitables des maisons du 73",
+        title = plot_title,
         x = "Surface habitable (m²)",
         y = "Effectifs"
       ) +
@@ -196,41 +213,8 @@ server <- function(input, output) {
       )
   })
   
-  output$Répartition_surface_maison_74 <- renderPlot({
-    
-    # Utiliser les données filtrées
-    df_filtered <- filtered_data()
-    
-    df_maison = df_filtered[df_filtered$type_batiment == "maison",]
-    # Filtrer la surface et le département 74
-    df_maison_74 = df_maison[df_maison$surface_habitable_logement <= 350 & 
-                               df_maison$code_dept == "74", ]
-    
-    # Si le filtre départemental n'inclut pas le 74, le graphique sera vide (ou si pas de données)
-    if(nrow(df_maison_74) == 0 || input$code_postal_filtre == "73") {
-      return(NULL) # Ne rien afficher
-    }
-    
-    ggplot(df_maison_74, aes(x = surface_habitable_logement)) +
-      geom_histogram(
-        breaks = seq(0, 350, length.out = 8), 
-        fill = "red", # Nouvelle couleur pour la distinction
-        color = "black"
-      ) +
-      scale_x_continuous(limits = c(0, 350)) +
-      scale_y_continuous(limits = c(0, max(2000, max(table(cut(df_maison_74$surface_habitable_logement, breaks = seq(0, 350, length.out = 8))))*1.1, na.rm = TRUE))) +
-      labs(
-        title = "Répartition des surfaces habitables des maisons du 74",
-        x = "Surface habitable (m²)",
-        y = "Effectifs"
-      ) +
-      theme_light(base_size = 14) +
-      theme(
-        plot.title = element_text(face = "bold", hjust = 0.5),
-        axis.title = element_text(face = "bold"),
-        panel.grid.minor = element_blank()
-      )
-  })
+  
+  # Les outputs pour Répartition_surface_maison_73 et Répartition_surface_maison_74 sont supprimés.
   
   
   # --- 4. Output pour la Carte Leaflet ---
