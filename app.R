@@ -1,5 +1,5 @@
 # app.R
-# install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf"))
+# install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf")) # Packages nécessaires pour la création des graphiques
 library(ggplot2)
 library(shiny)
 library(leaflet)
@@ -7,11 +7,12 @@ library(dplyr)
 library(sf)
 library(RColorBrewer) # Ajout pour les palettes de couleurs si nécessaire
 
-# Assurez-vous que le fichier CSV est dans le bon chemin
+# S'assurez que le fichier CSV est dans le bon chemin
 df_total <- read.csv2(file = "DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
 
-# --- Préparation initiale des données pour les filtres ---
-# Assurer que 'code_insee_ban' est un caractère
+## Préparation des données pour les filtres 
+
+# S'assurer que 'code_insee_ban' est en caractère
 df_total$code_insee_ban <- as.character(df_total$code_insee_ban)
 
 # Création d'une colonne pour le code départemental (les deux premiers chiffres)
@@ -20,7 +21,7 @@ df_total$code_dept <- substr(df_total$code_insee_ban, 1, 2)
 # Définition des options pour le filtre "neufancien"
 neufancien_choices <- c("Les deux" = "les_deux", "Ancien" = "ancien", "Neuf" = "neuf")
 
-# --- Définition de l'Interface Utilisateur (UI) ---
+## Définition de l'Interface Utilisateur (UI) 
 ui <- fluidPage(
   
   # Titre de l'application
@@ -58,7 +59,7 @@ ui <- fluidPage(
       # Création des onglets (tabsetPanel)
       tabsetPanel(
         
-        # Onglet 1 : Comparaison territoire (Histogrammes modifiés)
+        # Onglet 1 : Comparaison territoire 
         tabPanel("Comparaison territoire",
                  h3("Répartition des surfaces habitables des maisons"),
                  # Un seul plot pour le 73 et le 74
@@ -77,18 +78,22 @@ ui <- fluidPage(
                  )
         ),
         
-        # Onglet 3 : Corrélation
-        tabPanel("Corrélation",
+        # Onglet 3 : Analyse DPE
+        tabPanel("Analyse DPE",
                  h3("Corrélation entre les Étiquettes Énergie et Climat"),
-                 plotOutput("Correlation_ges_dpe"))
+                 plotOutput("Correlation_ges_dpe"),
+                 plotOutput("Repartition_dpe_classe_par_departement")
+        )
       )
     )
   )
 )
 
+## Définition de l'Interface Server (server) 
+
 server <- function(input, output) {
   
-  # --- 1. Expression Réactive pour le Filtrage des Données ---
+  # Filtrage des Données 
   filtered_data <- reactive({
     data <- df_total
     
@@ -111,12 +116,12 @@ server <- function(input, output) {
   })
   
   
-  # --- 2. Reactive expression pour préparer les données de la carte (coordonnées) ---
+  # Prépation des données de la carte (coordonnées) 
   map_data <- reactive({
     # Utiliser les données filtrées
     data <- filtered_data()
     
-    # 1. Conversion des coordonnées X/Y en numérique pour Leaflet.
+    # Conversion des coordonnées X/Y en numérique pour Leaflet.
     data <- data %>%
       mutate(
         # Remplacement de la virgule par le point pour la conversion
@@ -133,7 +138,7 @@ server <- function(input, output) {
       return(data.frame(longitude = numeric(0), latitude = numeric(0), etiquette_dpe = character(0)))
     }
     
-    # 2. Conversion du Lambert 93 (EPSG:2154) au WGS84 (EPSG:4326)
+    # Conversion du Lambert 93 (EPSG:2154) au WGS84 (EPSG:4326)
     # On ignore les warnings liés aux NA qui ont déjà été gérés
     suppressWarnings({
       sf_points <- data %>%
@@ -151,7 +156,7 @@ server <- function(input, output) {
       )
     })
     
-    # 3. FILTRAGE DES POINTS ABERRANTS (Hors de France métropolitaine)
+    # FILTRAGE DES POINTS ABERRANTS (Hors de France métropolitaine)
     data_filtered <- data_wgs84 %>%
       filter(longitude >= -5 & longitude <= 10 & 
                latitude >= 42 & latitude <= 51)
@@ -162,7 +167,7 @@ server <- function(input, output) {
   })
   
   
-  # --- 3. Output pour l'Histogramme de Répartition des Surfaces (73 et/ou 74) ---
+  # Output pour l'Histogramme de Répartition des Surfaces (73 et/ou 74) 
   output$Répartition_surface_maison <- renderPlot({
     
     # Utiliser les données filtrées
@@ -194,7 +199,7 @@ server <- function(input, output) {
     # histogramme répartition surface habitable maison
     p <- ggplot(df_maison, aes(x = surface_habitable_logement)) +
       geom_histogram(
-        breaks = seq(0, 350, length.out = 8),
+        breaks = seq(0, 350, length.out = 11),
         fill = "red",
         color = "black"
       )
@@ -246,7 +251,7 @@ server <- function(input, output) {
     # histogramme répartition surface habitable appartement
     p <- ggplot(df_appartement, aes(x = surface_habitable_logement)) +
       geom_histogram(
-        breaks = seq(0, 250, length.out = 6),
+        breaks = seq(0, 250, length.out = 11),
         fill = "red",
         color = "black"
       )
@@ -267,7 +272,7 @@ server <- function(input, output) {
       )
   })
   
-  # --- 4. Output pour la Carte Leaflet ---
+  # Output pour la Carte Leaflet
   output$dpe_map <- renderLeaflet({
     data <- map_data() # Utiliser les données converties et filtrées
     
@@ -287,7 +292,7 @@ server <- function(input, output) {
     # S'assurer que 'etiquette_dpe' est un facteur pour un bon mappage des couleurs
     data$etiquette_dpe <- factor(data$etiquette_dpe, levels = names(dpe_colors))
     
-    # Créez le contenu des popups (fenêtres d'information au clic)
+    # Créez le contenu des popups 
     content <- paste(sep = "<br/>",
                      paste("<b>DPE:</b>", data$etiquette_dpe),
                      paste("Surface:", data$surface_habitable_logement, "m²"),
@@ -322,7 +327,7 @@ server <- function(input, output) {
                 title = "Étiquette DPE")
   })
   
-  # --- 5. Output pour la Corrélation ---
+  # Output pour la Corrélation 
   output$Correlation_ges_dpe <- renderPlot({
     
     # Utiliser les données filtrées
@@ -353,7 +358,40 @@ server <- function(input, output) {
       # Ajout d'une échelle de couleur pour l'effet de compte (si désiré)
       scale_fill_gradient(low = "lightgray", high = "red")
   })
+  
+  # Répartition des DPE par département
+  output$Repartition_dpe_classe_par_departement <- renderPlot({
+    
+    df <- filtered_data()
+    
+    # Vérification que la colonne "etiquette_dpe" existe
+    if(!"etiquette_dpe" %in% colnames(df)) {
+      validate(need(FALSE, "Aucune colonne 'etiquette_dpe' trouvée dans les données."))
+    }
+    
+    # Intégration des données
+    df_summary <- df %>%
+      group_by(code_dept, etiquette_dpe) %>%
+      summarise(nb_logements = n(), .groups = "drop")
+    
+    # Création du graphique
+    ggplot(df_summary, aes(x = etiquette_dpe, y = nb_logements, fill = code_dept)) +
+      geom_bar(stat = "identity", position = "dodge") +
+      scale_fill_brewer(palette = "Set1", name = "Département") +
+      labs(
+        title = "Répartition des classes DPE par département",
+        x = "Classe DPE",
+        y = "Nombre de logements"
+      ) +
+      theme_minimal(base_size = 14) +
+      theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.position = "bottom"
+      )
+  })
+  
 }
 
-# --- Exécution de l'application ---
+# Exécution de l'application 
 shinyApp(ui = ui, server = server)
