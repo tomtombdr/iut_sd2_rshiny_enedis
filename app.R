@@ -1,17 +1,19 @@
 # app.R
-# install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT")) # Packages nécessaires pour la création des graphiques
+# install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib")) 
+
 library(ggplot2)
 library(shiny)
 library(leaflet)
 library(dplyr)
 library(sf)
-library(RColorBrewer) # Ajout pour les palettes de couleurs si nécessaire
+library(RColorBrewer)
 library(DT)
+library(bslib) # Package nécessaire pour les thèmes dynamiques
 
 # S'assurez que le fichier CSV est dans le bon chemin
 df_total <- read.csv2(file = "DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
 
-## Préparation des données pour les filtres 
+## Préparation des données pour les filtres
 
 # S'assurer que 'code_insee_ban' est en caractère
 df_total$code_insee_ban <- as.character(df_total$code_insee_ban)
@@ -32,8 +34,19 @@ neufancien_choices <- c("Les deux" = "les_deux", "Ancien" = "ancien", "Neuf" = "
 dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
 
 
-## Définition de l'Interface Utilisateur (UI) 
+## Définition de l'Interface Utilisateur (UI)
+
+# Définir un thème de base (obligatoire pour bslib)
+my_theme <- bs_theme(
+  version = 5,
+  bootswatch = "cosmo" # Thème par défaut
+)
+
 ui <- fluidPage(
+  
+  # --- THÈME BSLIB RÉACTIF ---
+  theme = my_theme, 
+  # --------------------------
   
   # Titre de l'application
   titlePanel("Présentation du DPE sur les logements neufs et existants en Savoie et Haute-Savoie"),
@@ -43,7 +56,20 @@ ui <- fluidPage(
     
     # Panneau de la barre latérale pour les filtres (commun à tous les onglets)
     sidebarPanel(
-      width = 3, # Rendre la sidebar plus fine (3/12 de la largeur)
+      width = 3,
+      
+      # --- CONTRÔLE DE SÉLECTION DU THÈME (AJOUT) ---
+      selectInput("theme_selector", "Changer de Thème :",
+                  choices = c(
+                    "Cosmo (Clair Moderne)" = "cosmo",
+                    "Darkly (Sombre)" = "darkly",
+                    "Lumen (Minimaliste)" = "lumen",
+                    "Superhero (Sombre Audacieux)" = "superhero",
+                    "Minty (Clair Vert)" = "minty"
+                  ),
+                  selected = "cosmo"),
+      hr(),
+      # ---------------------------------------------
       
       # Ajout logo Enedis
       tags$img(
@@ -76,11 +102,11 @@ ui <- fluidPage(
     
     # Panneau principal pour les onglets
     mainPanel(
-      width = 9, # Augmenter la largeur du panneau principal (9/12 de la largeur)
+      width = 9, 
       # Création des onglets (tabsetPanel)
       tabsetPanel(
         
-        # Onglet 1 : Comparaison territoire 
+        # Onglet 1 : Comparaison territoire 
         tabPanel("Comparaison territoire",
                  h3("Répartition des surfaces habitables des maisons"),
                  plotOutput("Répartition_surface_maison"),
@@ -114,8 +140,8 @@ ui <- fluidPage(
                           sliderInput("surface_filtre",
                                       "Filtrer par Superficie Habitable :",
                                       min = 0, 
-                                      max = 500, # VALEUR MAX MISE À JOUR
-                                      value = c(0, 500), # VALEUR PAR DÉFAUT MISE À JOUR
+                                      max = 500,
+                                      value = c(0, 500),
                                       step = 1,
                                       dragRange = TRUE)
                    )
@@ -144,7 +170,7 @@ ui <- fluidPage(
                    style = "color:#0066cc; font-weight:bold; text-decoration:none;"
                  ),
                  
-                 tags$br(), # saut de ligne
+                 tags$br(), 
                  tags$br(),
                  
                  tags$a(
@@ -162,9 +188,17 @@ ui <- fluidPage(
   )
 )
 
-## Définition de l'Interface Server (server) 
+## Définition de l'Interface Server (server)
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  # --- LOGIQUE DE CHANGEMENT DE THÈME (AJOUT) ---
+  observeEvent(input$theme_selector, {
+    session$setCurrentTheme(
+      bs_theme_update(my_theme, bootswatch = input$theme_selector)
+    )
+  })
+  # ---------------------------------------------
   
   # Génération de l'UI pour le filtre par Code Postal (ID: code_postal_filtre)
   output$code_postal_ui <- renderUI({
@@ -197,7 +231,7 @@ server <- function(input, output) {
                 selected = "toutes_communes")
   })
   
-  # Filtrage des Données 
+  # Filtrage des Données 
   filtered_data <- reactive({
     data <- df_total
     
@@ -238,7 +272,7 @@ server <- function(input, output) {
   })
   
   
-  # Prépation des données de la carte (coordonnées) 
+  # Prépation des données de la carte (coordonnées) 
   map_data <- reactive({
     # Utiliser les données filtrées
     data <- filtered_data()
@@ -289,7 +323,7 @@ server <- function(input, output) {
   })
   
   
-  # Output pour l'Histogramme de Répartition des Surfaces (73 et/ou 74) 
+  # Output pour l'Histogramme de Répartition des Surfaces (73 et/ou 74) 
   output$Répartition_surface_maison <- renderPlot({
     
     # Utiliser les données filtrées
@@ -414,7 +448,7 @@ server <- function(input, output) {
     # S'assurer que 'etiquette_dpe' est un facteur pour un bon mappage des couleurs
     data$etiquette_dpe <- factor(data$etiquette_dpe, levels = names(dpe_colors))
     
-    # Créez le contenu des popups 
+    # Créez le contenu des popups 
     content <- paste(sep = "<br/>",
                      paste("<b>DPE:</b>", data$etiquette_dpe),
                      paste("Surface:", data$surface_habitable_logement, "m²"),
@@ -449,7 +483,7 @@ server <- function(input, output) {
                 title = "Étiquette DPE")
   })
   
-  # Output pour la Corrélation 
+  # Output pour la Corrélation 
   output$Correlation_ges_dpe <- renderPlot({
     
     # Utiliser les données filtrées
@@ -547,5 +581,5 @@ server <- function(input, output) {
   
 }
 
-# Exécution de l'application 
+# Exécution de l'application 
 shinyApp(ui = ui, server = server)
