@@ -19,13 +19,16 @@ df_total$code_insee_ban <- as.character(df_total$code_insee_ban)
 # S'assurer que 'code_postal_ban' est en caractère (essentiel pour startsWith et éviter les erreurs)
 df_total$code_postal_ban <- as.character(df_total$code_postal_ban)
 
+# Conversion de la surface en numérique (R gère la virgule si read.csv2 est utilisé, mais une conversion explicite est plus sûre)
+df_total$surface_habitable_logement <- as.numeric(gsub(",", ".", df_total$surface_habitable_logement))
+
 # Création d'une colonne pour le code départemental (les deux premiers chiffres)
 df_total$code_dept <- substr(df_total$code_insee_ban, 1, 2)
 
 # Définition des options pour le filtre "neufancien"
 neufancien_choices <- c("Les deux" = "les_deux", "Ancien" = "ancien", "Neuf" = "neuf")
 
-# Définition des options pour le filtre "DPE" (Utilisé pour le checkbox)
+# Définition des options pour le filtre "DPE"
 dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
 
 
@@ -88,12 +91,12 @@ ui <- fluidPage(
         tabPanel("Carte avec clustering", 
                  fluidRow(
                    column(3,
-                          # NOUVEAU: Filtre par classe DPE pour la carte (Checkbox)
+                          # Filtre par classe DPE pour la carte (Checkbox)
                           h4("Filtrer par Classe DPE"),
                           checkboxGroupInput("dpe_classe_filtre",
-                                             label = NULL, # Le titre est dans h4
+                                             label = NULL, 
                                              choices = dpe_levels,
-                                             selected = dpe_levels) # Sélectionner toutes les classes par défaut
+                                             selected = dpe_levels)
                    ),
                    column(9,
                           h3("Localisation de tous les logements (Clustering)", align = "center", style = "margin-top: 20px; color: #1a5276;"),
@@ -105,6 +108,19 @@ ui <- fluidPage(
         
         # Onglet 3 : Analyse DPE
         tabPanel("Analyse DPE",
+                 # SLIDER POUR LA SUPERFICIE (MIS À JOUR)
+                 fluidRow(
+                   column(12, 
+                          sliderInput("surface_filtre",
+                                      "Filtrer par Superficie Habitable :",
+                                      min = 0, 
+                                      max = 500, # VALEUR MAX MISE À JOUR
+                                      value = c(0, 500), # VALEUR PAR DÉFAUT MISE À JOUR
+                                      step = 1,
+                                      dragRange = TRUE)
+                   )
+                 ),
+                 
                  h3("Corrélation entre les Étiquettes Énergie et Climat"),
                  plotOutput("Correlation_ges_dpe"),
                  plotOutput("Repartition_dpe_classe_par_departement")
@@ -203,14 +219,20 @@ server <- function(input, output) {
         filter(neufancien == input$neufancien_filtre)
     }
     
-    # FILTRE 4: Classe DPE (CheckBox)
-    # L'input est un vecteur de classes sélectionnées. Si le vecteur est vide, cela signifie "Toutes" (car le défaut est "Toutes").
-    # Si des classes sont sélectionnées, on filtre sur ces classes.
+    # FILTRE 4: Classe DPE (CheckBox) - Utilisé sur l'onglet 2
     if (!is.null(input$dpe_classe_filtre) && length(input$dpe_classe_filtre) > 0) {
       data <- data %>%
         filter(etiquette_dpe %in% input$dpe_classe_filtre)
     } 
-    # Si input$dpe_classe_filtre est NULL (aucune case cochée), aucun filtre n'est appliqué ici, ce qui équivaut à "Toutes".
+    
+    # FILTRE 5: Superficie (Slider) - Utilisé sur l'onglet 3
+    if (!is.null(input$surface_filtre)) {
+      min_surface <- input$surface_filtre[1]
+      max_surface <- input$surface_filtre[2]
+      
+      data <- data %>%
+        filter(surface_habitable_logement >= min_surface & surface_habitable_logement <= max_surface)
+    }
     
     return(data)
   })
@@ -404,8 +426,8 @@ server <- function(input, output) {
       addTiles() %>% # Ajout du fond de carte OpenStreetMap
       
       # Centrer la vue sur la zone où se trouvent les points
-      fitBounds(lng1 = min(data$longitude), lat1 = min(data$latitude), 
-                lng2 = max(data$longitude), lat2 = max(data$latitude)) %>%
+      fitBounds(lng1 = min(data$longitude, na.rm = TRUE), lat1 = min(data$latitude, na.rm = TRUE), 
+                lng2 = max(data$longitude, na.rm = TRUE), lat2 = max(data$latitude, na.rm = TRUE)) %>%
       
       # Ajout des marqueurs circulaires avec l'option de clustering
       addCircleMarkers(
