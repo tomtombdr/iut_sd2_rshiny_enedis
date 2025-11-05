@@ -1,6 +1,20 @@
 ---
-title: "Documentation pratique"
+title: "Documentation fonctionnelle"
 author: "Evan Lane et Tom Baudry"
-date: "2025-10-18"
 output: html_document
 ---
+
+**Présentation de l'application**
+
+Dans cette documentation fonctionnelle, nous vous présenterons les différentes options que l'application propose, ce qui la compose et comment les utiliser.
+
+Pour commencer, l'application est composée de 4 onglets :
+
+  - L'onglet "Comparaison territoire", qui présente 2 graphiques sur les différents type de logements, donc maison ou appartement, réparti par surface habitable. Cet onglet     est filtrable selon le département (Savoie ou Haute-Savoie) et l'âge du logement (neuf ou ancien).
+  
+  - L'onglet "Carte avec clustering", qui montre une carte intéractive sur l'emplacement géographique des logements en Savoie et Haute-Savoie. Il y a aussi la possibilité de     filtrer par département et âge du logement.
+  
+  - L'onglet "Analyse DPE", qui va présenter les différents axes d'études des DPE entre les 2 départements, avec des graphiques divers. Il y a aussi la possibilité de           filtrer par département et âge du logement.
+  
+  - L'onglet "Contexte", qui va présenter les données utilisées pour l'étude, avec leur signification, tout cela résumé dans un tableau.
+   
