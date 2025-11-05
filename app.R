@@ -16,6 +16,9 @@ df_total <- read.csv2(file = "DATA/données_projet_DPE.csv", stringsAsFactors = 
 # S'assurer que 'code_insee_ban' est en caractère
 df_total$code_insee_ban <- as.character(df_total$code_insee_ban)
 
+# S'assurer que 'code_postal_ban' est en caractère (essentiel pour startsWith et éviter les erreurs)
+df_total$code_postal_ban <- as.character(df_total$code_postal_ban)
+
 # Création d'une colonne pour le code départemental (les deux premiers chiffres)
 df_total$code_dept <- substr(df_total$code_insee_ban, 1, 2)
 
@@ -34,22 +37,25 @@ ui <- fluidPage(
     # Panneau de la barre latérale pour les filtres (commun à tous les onglets)
     sidebarPanel(
       width = 3, # Rendre la sidebar plus fine (3/12 de la largeur)
-
+      
       # Ajout logo Enedis
       tags$img(
         src = "https://www.plogonnec.fr/wp-content/uploads/2022/04/enedis-logo-D7DA244D2C-seeklogo.com_.png",
-        width = "100%",     
+        width = "100%",    
         style = "margin-bottom: 5px; border-radius: 2px;"
       ),
       h4("Filtres de Données"),
       
-      # 1. Filtre par code départemental
-      selectInput("code_postal_filtre",
+      # 1. Filtre par code départemental (ID: code_dept_filtre)
+      selectInput("code_dept_filtre", # ID renommé pour plus de clarté
                   "Filtrer par Département (Code INSEE):",
                   choices = c("Les deux" = "tous", 
                               "Savoie (73)" = "73", 
                               "Haute-Savoie (74)" = "74"),
                   selected = "tous"), # 'tous' est la valeur par défaut
+      
+      # ESPACE RÉSERVÉ POUR LE NOUVEAU FILTRE DE CODE POSTAL DYNAMIQUE
+      uiOutput("code_postal_ui"),
       
       # 2. Filtre par type de logement (Neuf/Ancien)
       selectInput("neufancien_filtre",
@@ -111,7 +117,7 @@ ui <- fluidPage(
                    style = "color:#0066cc; font-weight:bold; text-decoration:none;"
                  ),
                  
-                 tags$br(),  # saut de ligne
+                 tags$br(), # saut de ligne
                  tags$br(),
                  
                  tags$a(
@@ -133,18 +139,55 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
+  # NOUVEAU: Génération de l'UI pour le filtre par Code Postal (ID: code_postal_filtre)
+  output$code_postal_ui <- renderUI({
+    
+    # Rendre la fonction robuste en gérant les NA et les chaînes vides
+    valid_codes <- df_total$code_postal_ban[!is.na(df_total$code_postal_ban) & df_total$code_postal_ban != ""]
+    
+    # Récupérer la sélection du département
+    dept_selection <- input$code_dept_filtre
+    
+    # Filtrer la liste des codes postaux en fonction de la sélection du département
+    if (dept_selection == "73") {
+      # Codes postaux qui commencent par '73'
+      choices <- sort(unique(valid_codes[startsWith(valid_codes, "73")]))
+    } else if (dept_selection == "74") {
+      # Codes postaux qui commencent par '74'
+      choices <- sort(unique(valid_codes[startsWith(valid_codes, "74")]))
+    } else {
+      # Si "tous" est sélectionné, on prend tous les codes postaux des deux départements (73 et 74)
+      choices <- sort(unique(valid_codes[startsWith(valid_codes, "73") | startsWith(valid_codes, "74")]))
+    }
+    
+    # Ajouter l'option "Toutes les communes" au début de la liste
+    choices_with_all <- c("Toutes les communes" = "toutes_communes", choices)
+    
+    # Création du selectInput pour le code postal
+    selectInput("code_postal_filtre",
+                "Filtrer par Code Postal:",
+                choices = choices_with_all,
+                selected = "toutes_communes")
+  })
+  
   # Filtrage des Données 
   filtered_data <- reactive({
     data <- df_total
     
-    # FILTRE 1: Code Postal (Département)
-    # Si 'tous' est sélectionné, on ne filtre pas
-    if (input$code_postal_filtre != "tous") {
+    # FILTRE 1: Code Départemental (DEPT) - utilise 'code_dept_filtre'
+    if (input$code_dept_filtre != "tous") {
       data <- data %>%
-        filter(code_dept == input$code_postal_filtre)
+        filter(code_dept == input$code_dept_filtre)
     }
     
-    # FILTRE 2: Neuf / Ancien
+    # FILTRE 2: Code Postal (CP) - utilise 'code_postal_filtre'
+    # Le filtre ne s'applique que si l'élément existe ET que l'option "toutes_communes" n'est PAS sélectionnée
+    if (!is.null(input$code_postal_filtre) && input$code_postal_filtre != "toutes_communes") {
+      data <- data %>%
+        filter(code_postal_ban == input$code_postal_filtre)
+    }
+    
+    # FILTRE 3: Neuf / Ancien
     # Si 'les_deux' est sélectionné, on ne filtre pas
     if (input$neufancien_filtre != "les_deux") {
       # Le filtre utilise les valeurs brutes "ancien" et "neuf" du jeu de données
@@ -228,8 +271,8 @@ server <- function(input, output) {
       )
     }
     
-    # Préparation du titre en fonction du filtre départemental
-    dept_name <- switch(input$code_postal_filtre,
+    # Préparation du titre en fonction du filtre départemental (ID mis à jour)
+    dept_name <- switch(input$code_dept_filtre,
                         "73" = "Savoie (73)",
                         "74" = "Haute-Savoie (74)",
                         "tous" = "Savoie (73) et Haute-Savoie (74)")
@@ -275,13 +318,13 @@ server <- function(input, output) {
       # Retourner un graphique vide ou un message d'erreur
       return(
         ggplot() +
-          labs(title = "Aucune donnée de maison disponible avec les filtres actuels.") +
+          labs(title = "Aucune donnée d'appartement disponible avec les filtres actuels.") +
           theme_void()
       )
     }
     
-    # Préparation du titre en fonction du filtre départemental
-    dept_name <- switch(input$code_postal_filtre,
+    # Préparation du titre en fonction du filtre départemental (ID mis à jour)
+    dept_name <- switch(input$code_dept_filtre,
                         "73" = "Savoie (73)",
                         "74" = "Haute-Savoie (74)",
                         "tous" = "Savoie (73) et Haute-Savoie (74)")
