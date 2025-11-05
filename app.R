@@ -6,6 +6,7 @@ library(leaflet)
 library(dplyr)
 library(sf)
 library(RColorBrewer) # Ajout pour les palettes de couleurs si nécessaire
+library(DT)
 
 # S'assurez que le fichier CSV est dans le bon chemin
 df_total <- read.csv2(file = "DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
@@ -33,6 +34,13 @@ ui <- fluidPage(
     # Panneau de la barre latérale pour les filtres (commun à tous les onglets)
     sidebarPanel(
       width = 3, # Rendre la sidebar plus fine (3/12 de la largeur)
+
+      # Ajout logo Enedis
+      tags$img(
+        src = "https://www.plogonnec.fr/wp-content/uploads/2022/04/enedis-logo-D7DA244D2C-seeklogo.com_.png",
+        width = "100%",     
+        style = "margin-bottom: 5px; border-radius: 2px;"
+      ),
       h4("Filtres de Données"),
       
       # 1. Filtre par code départemental
@@ -83,6 +91,38 @@ ui <- fluidPage(
                  h3("Corrélation entre les Étiquettes Énergie et Climat"),
                  plotOutput("Correlation_ges_dpe"),
                  plotOutput("Repartition_dpe_classe_par_departement")
+        ),
+        
+        # Onglet 4 : Contexte
+        tabPanel("Contexte",
+                 h3("Tableau récapitulatif des champs utilisés"),
+                 DT::dataTableOutput("table_doc"),
+                 
+                 tags$br(),
+                 
+                 h5("Liens vers les bases de données de l'ADEME", style = "font-weight: bold;"),
+                 tags$a(
+                   href = "https://data.ademe.fr/datasets/dpe03existant",
+                   target = "_blank",
+                   tagList(
+                     icon("database"),
+                     " Source : ADEME (base DPE logements existants)"
+                   ),
+                   style = "color:#0066cc; font-weight:bold; text-decoration:none;"
+                 ),
+                 
+                 tags$br(),  # saut de ligne
+                 tags$br(),
+                 
+                 tags$a(
+                   href = "https://data.ademe.fr/datasets/dpe02neuf",
+                   target = "_blank",
+                   tagList(
+                     icon("database"),
+                     " Source : ADEME (base DPE logements neufs)"
+                   ),
+                   style = "color:#0066cc; font-weight:bold; text-decoration:none;"
+                 )
         )
       )
     )
@@ -389,6 +429,38 @@ server <- function(input, output) {
         axis.title = element_text(face = "bold"),
         legend.position = "bottom"
       )
+  })
+  
+  output$table_doc <- DT::renderDataTable({
+    
+    # Création du tableau de description des champs
+    
+    doc <- data.frame(
+      Champ = names(df_total),
+      Description = c(
+        "Nom de la commune du logement",
+        "Code insee du logement",
+        "Année de construction du logement",
+        "Coordonnée géographique x des logements",
+        "Type de batiment (maison/appartement)",
+        "Type d'installation des eaux chaude sanitaire (individuel/collectif)",
+        "Date de reception du DPE",
+        "Notation de la production de gaz à effet de serre (A à G)",
+        "Coordonnée géographique y des logements",
+        "Type d'installation du chauffage (individuel/collectif)",
+        "Code postal du logement",
+        "Surface habitable du logement (m²)",
+        "Hauteur sous plafond du logement (m)",
+        "Notation du DPE (A à G)",
+        "Score du logement",
+        "Catégorie d'énergie utilisée par le logement",
+        "Classe d'âge du logement (neuf/ancien)",
+        "Code du département"
+      )
+    )
+    
+    # Rend le tableau intéractif
+    datatable(doc, options = list(pageLength = 20))
   })
   
 }
