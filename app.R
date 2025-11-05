@@ -25,6 +25,10 @@ df_total$code_dept <- substr(df_total$code_insee_ban, 1, 2)
 # Définition des options pour le filtre "neufancien"
 neufancien_choices <- c("Les deux" = "les_deux", "Ancien" = "ancien", "Neuf" = "neuf")
 
+# Définition des options pour le filtre "DPE" (Utilisé pour le checkbox)
+dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
+
+
 ## Définition de l'Interface Utilisateur (UI) 
 ui <- fluidPage(
   
@@ -47,21 +51,21 @@ ui <- fluidPage(
       h4("Filtres de Données"),
       
       # 1. Filtre par code départemental (ID: code_dept_filtre)
-      selectInput("code_dept_filtre", # ID renommé pour plus de clarté
+      selectInput("code_dept_filtre", 
                   "Filtrer par Département (Code INSEE):",
                   choices = c("Les deux" = "tous", 
                               "Savoie (73)" = "73", 
                               "Haute-Savoie (74)" = "74"),
-                  selected = "tous"), # 'tous' est la valeur par défaut
+                  selected = "tous"), 
       
-      # ESPACE RÉSERVÉ POUR LE NOUVEAU FILTRE DE CODE POSTAL DYNAMIQUE
+      # ESPACE RÉSERVÉ POUR LE FILTRE DE CODE POSTAL DYNAMIQUE
       uiOutput("code_postal_ui"),
       
       # 2. Filtre par type de logement (Neuf/Ancien)
       selectInput("neufancien_filtre",
                   "Type de Logement:",
                   choices = neufancien_choices,
-                  selected = "les_deux"), # 'les_deux' est la valeur par défaut
+                  selected = "les_deux"),
       
       hr(), # Ligne de séparation
       p(em("Les graphiques et la carte ci-dessous sont mis à jour en fonction de ces filtres."))
@@ -76,7 +80,6 @@ ui <- fluidPage(
         # Onglet 1 : Comparaison territoire 
         tabPanel("Comparaison territoire",
                  h3("Répartition des surfaces habitables des maisons"),
-                 # Un seul plot pour le 73 et le 74
                  plotOutput("Répartition_surface_maison"),
                  h3("Répartition des surfaces habitables des appartements"),
                  plotOutput("Répartition_surface_appartement")),
@@ -84,7 +87,15 @@ ui <- fluidPage(
         # Onglet 2 : Carte avec clustering
         tabPanel("Carte avec clustering", 
                  fluidRow(
-                   column(12,
+                   column(3,
+                          # NOUVEAU: Filtre par classe DPE pour la carte (Checkbox)
+                          h4("Filtrer par Classe DPE"),
+                          checkboxGroupInput("dpe_classe_filtre",
+                                             label = NULL, # Le titre est dans h4
+                                             choices = dpe_levels,
+                                             selected = dpe_levels) # Sélectionner toutes les classes par défaut
+                   ),
+                   column(9,
                           h3("Localisation de tous les logements (Clustering)", align = "center", style = "margin-top: 20px; color: #1a5276;"),
                           # Output pour la carte Leaflet
                           leafletOutput("dpe_map", height = "700px")
@@ -139,7 +150,7 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   
-  # NOUVEAU: Génération de l'UI pour le filtre par Code Postal (ID: code_postal_filtre)
+  # Génération de l'UI pour le filtre par Code Postal (ID: code_postal_filtre)
   output$code_postal_ui <- renderUI({
     
     # Rendre la fonction robuste en gérant les NA et les chaînes vides
@@ -181,19 +192,25 @@ server <- function(input, output) {
     }
     
     # FILTRE 2: Code Postal (CP) - utilise 'code_postal_filtre'
-    # Le filtre ne s'applique que si l'élément existe ET que l'option "toutes_communes" n'est PAS sélectionnée
     if (!is.null(input$code_postal_filtre) && input$code_postal_filtre != "toutes_communes") {
       data <- data %>%
         filter(code_postal_ban == input$code_postal_filtre)
     }
     
     # FILTRE 3: Neuf / Ancien
-    # Si 'les_deux' est sélectionné, on ne filtre pas
     if (input$neufancien_filtre != "les_deux") {
-      # Le filtre utilise les valeurs brutes "ancien" et "neuf" du jeu de données
       data <- data %>%
         filter(neufancien == input$neufancien_filtre)
     }
+    
+    # FILTRE 4: Classe DPE (CheckBox)
+    # L'input est un vecteur de classes sélectionnées. Si le vecteur est vide, cela signifie "Toutes" (car le défaut est "Toutes").
+    # Si des classes sont sélectionnées, on filtre sur ces classes.
+    if (!is.null(input$dpe_classe_filtre) && length(input$dpe_classe_filtre) > 0) {
+      data <- data %>%
+        filter(etiquette_dpe %in% input$dpe_classe_filtre)
+    } 
+    # Si input$dpe_classe_filtre est NULL (aucune case cochée), aucun filtre n'est appliqué ici, ce qui équivaut à "Toutes".
     
     return(data)
   })
