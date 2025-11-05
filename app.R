@@ -1,5 +1,5 @@
 # app.R
-# install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf")) # Packages nécessaires pour la création des graphiques
+# install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT")) # Packages nécessaires pour la création des graphiques
 library(ggplot2)
 library(shiny)
 library(leaflet)
