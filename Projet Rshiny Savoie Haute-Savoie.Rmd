@@ -25,8 +25,8 @@ df_appartement <- df_filtered %>%
 
 ---
 title: "Rapport statistique sur les DPE de la Savoie et la Haute-Savoie"
+author: "Evan Lane et Tom Baudry"
 output: html_document
-date: "2025-10-16"
 ---
 
 # **Introduction**
