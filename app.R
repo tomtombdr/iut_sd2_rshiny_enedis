@@ -44,9 +44,8 @@ my_theme <- bs_theme(
 
 ui <- fluidPage(
   
-  # --- THÈME BSLIB RÉACTIF ---
+  # THÈME BSLIB RÉACTIF
   theme = my_theme, 
-  # --------------------------
   
   # Titre de l'application
   titlePanel("Présentation du DPE sur les logements neufs et existants en Savoie et Haute-Savoie"),
@@ -58,7 +57,7 @@ ui <- fluidPage(
     sidebarPanel(
       width = 3,
       
-      # --- CONTRÔLE DE SÉLECTION DU THÈME (AJOUT) ---
+      # CONTRÔLE DE SÉLECTION DU THÈME (AJOUT)
       selectInput("theme_selector", "Changer de Thème :",
                   choices = c(
                     "Cosmo (Clair Moderne)" = "cosmo",
@@ -69,7 +68,6 @@ ui <- fluidPage(
                   ),
                   selected = "cosmo"),
       hr(),
-      # ---------------------------------------------
       
       # Ajout logo Enedis
       tags$img(
@@ -192,7 +190,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  # --- LOGIQUE DE CHANGEMENT DE THÈME (AJOUT) ---
+  # LOGIQUE DE CHANGEMENT DE THÈME (AJOUT)
   observeEvent(input$theme_selector, {
     session$setCurrentTheme(
       bs_theme_update(my_theme, bootswatch = input$theme_selector)
