@@ -148,7 +148,7 @@ df_total <- rbind(df, df_total)
 #création du .csv
 write.csv2(
   x = df_total, 
-  file = "données_projet_DPE.csv",
+  file = "../DATA/données_projet_DPE.csv",
   row.names = FALSE,       
   fileEncoding = "UTF-8"   
 )
