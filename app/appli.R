@@ -1,5 +1,5 @@
 # app.R
-# install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib")) 
+# install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib")) 
 
 library(ggplot2)
 library(shiny)
@@ -9,6 +9,7 @@ library(sf)
 library(RColorBrewer)
 library(DT)
 library(bslib) # Package nécessaire pour les thèmes dynamiques
+library(rsconnect)
 
 # S'assurez que le fichier CSV est dans le bon chemin
 df_total <- read.csv2(file = "../DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
