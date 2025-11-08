@@ -1,3 +1,8 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
 ```{r setup,eval=TRUE, echo=FALSE, message = FALSE,include=FALSE}
 options(repos = c(CRAN = "https://cloud.r-project.org")) # Définition d'un mirroir pour le Cran
 
