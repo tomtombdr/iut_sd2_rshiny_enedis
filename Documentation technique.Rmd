@@ -1,7 +1,0 @@
----
-title: "Documentation technique"
-author: "Evan Lane et Tom Baudry"
-date: "2025-10-18"
-output: html_document
----
-
