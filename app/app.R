@@ -45,7 +45,7 @@ my_theme <- bs_theme(
 ui <- fluidPage(
   
   # --- THÈME BSLIB RÉACTIF ---
-  theme = my_theme, 
+  theme = my_theme,	
   # --------------------------
   
   # Titre de l'application
@@ -74,18 +74,18 @@ ui <- fluidPage(
       # Ajout logo Enedis
       tags$img(
         src = "https://www.plogonnec.fr/wp-content/uploads/2022/04/enedis-logo-D7DA244D2C-seeklogo.com_.png",
-        width = "100%",    
+        width = "100%",	 	
         style = "margin-bottom: 5px; border-radius: 2px;"
       ),
       h4("Filtres de Données"),
       
       # 1. Filtre par code départemental (ID: code_dept_filtre)
-      selectInput("code_dept_filtre", 
+      selectInput("code_dept_filtre",	
                   "Filtrer par Département (Code INSEE):",
-                  choices = c("Les deux" = "tous", 
-                              "Savoie (73)" = "73", 
+                  choices = c("Les deux" = "tous",	
+                              "Savoie (73)" = "73",	
                               "Haute-Savoie (74)" = "74"),
-                  selected = "tous"), 
+                  selected = "tous"),	
       
       # ESPACE RÉSERVÉ POUR LE FILTRE DE CODE POSTAL DYNAMIQUE
       uiOutput("code_postal_ui"),
@@ -102,11 +102,11 @@ ui <- fluidPage(
     
     # Panneau principal pour les onglets
     mainPanel(
-      width = 9, 
+      width = 9,	
       # Création des onglets (tabsetPanel)
       tabsetPanel(
         
-        # Onglet 1 : Comparaison territoire 
+        # Onglet 1 : Comparaison territoire	
         tabPanel("Comparaison territoire",
                  h3("Répartition des surfaces habitables des maisons"),
                  plotOutput("Répartition_surface_maison"),
@@ -114,13 +114,13 @@ ui <- fluidPage(
                  plotOutput("Répartition_surface_appartement")),
         
         # Onglet 2 : Carte avec clustering
-        tabPanel("Carte avec clustering", 
+        tabPanel("Carte avec clustering",	
                  fluidRow(
                    column(3,
                           # Filtre par classe DPE pour la carte (Checkbox)
                           h4("Filtrer par Classe DPE"),
                           checkboxGroupInput("dpe_classe_filtre",
-                                             label = NULL, 
+                                             label = NULL,	
                                              choices = dpe_levels,
                                              selected = dpe_levels)
                    ),
@@ -136,10 +136,10 @@ ui <- fluidPage(
         tabPanel("Analyse DPE",
                  # SLIDER POUR LA SUPERFICIE (MIS À JOUR)
                  fluidRow(
-                   column(12, 
+                   column(12,	
                           sliderInput("surface_filtre",
                                       "Filtrer par Superficie Habitable :",
-                                      min = 0, 
+                                      min = 0,	
                                       max = 500,
                                       value = c(0, 500),
                                       step = 1,
@@ -149,7 +149,11 @@ ui <- fluidPage(
                  
                  h3("Corrélation entre les Étiquettes Énergie et Climat"),
                  plotOutput("Correlation_ges_dpe"),
-                 plotOutput("Repartition_dpe_classe_par_departement")
+                 
+                 # CHANGEMENT : REMPLACEMENT DE L'HISTOGRAMME EN BARRES PAR LA BOÎTE À MOUSTACHES
+                 h3("Distribution de la Surface Habitable par Classe DPE"),
+                 plotOutput("boxplot_surface_par_dpe") 
+                 # NOUVEL ID
         ),
         
         # Onglet 4 : Contexte
@@ -170,7 +174,7 @@ ui <- fluidPage(
                    style = "color:#0066cc; font-weight:bold; text-decoration:none;"
                  ),
                  
-                 tags$br(), 
+                 tags$br(),	
                  tags$br(),
                  
                  tags$a(
@@ -231,7 +235,7 @@ server <- function(input, output, session) {
                 selected = "toutes_communes")
   })
   
-  # Filtrage des Données 
+  # Filtrage des Données	
   filtered_data <- reactive({
     data <- df_total
     
@@ -257,7 +261,7 @@ server <- function(input, output, session) {
     if (!is.null(input$dpe_classe_filtre) && length(input$dpe_classe_filtre) > 0) {
       data <- data %>%
         filter(etiquette_dpe %in% input$dpe_classe_filtre)
-    } 
+    }	
     
     # FILTRE 5: Superficie (Slider) - Utilisé sur l'onglet 3
     if (!is.null(input$surface_filtre)) {
@@ -272,7 +276,7 @@ server <- function(input, output, session) {
   })
   
   
-  # Prépation des données de la carte (coordonnées) 
+  # Prépation des données de la carte (coordonnées)	
   map_data <- reactive({
     # Utiliser les données filtrées
     data <- filtered_data()
@@ -286,7 +290,7 @@ server <- function(input, output, session) {
       )
     
     # Filtrer les lignes avec des coordonnées NA ou non valides après la première conversion
-    data <- data %>% 
+    data <- data %>%	
       filter(!is.na(x_lambert) & !is.na(y_lambert) & !is.nan(x_lambert) & !is.nan(y_lambert))
     
     # S'il ne reste aucune donnée valide, on retourne un data frame vide
@@ -314,7 +318,7 @@ server <- function(input, output, session) {
     
     # FILTRAGE DES POINTS ABERRANTS (Hors de France métropolitaine)
     data_filtered <- data_wgs84 %>%
-      filter(longitude >= -5 & longitude <= 10 & 
+      filter(longitude >= -5 & longitude <= 10 &	
                latitude >= 42 & latitude <= 51)
     
     # Retourner les données filtrées
@@ -323,7 +327,7 @@ server <- function(input, output, session) {
   })
   
   
-  # Output pour l'Histogramme de Répartition des Surfaces (73 et/ou 74) 
+  # Output pour l'Histogramme de Répartition des Surfaces (73 et/ou 74)	
   output$Répartition_surface_maison <- renderPlot({
     
     # Utiliser les données filtrées
@@ -434,21 +438,21 @@ server <- function(input, output, session) {
     
     # Si le data frame est vide après le filtrage/conversion, affichez une carte centrée
     if(nrow(data) == 0) {
-      return(leaflet() %>% 
-               addTiles() %>% 
+      return(leaflet() %>%	
+               addTiles() %>%	
                setView(lng = 6.4, lat = 45.7, zoom = 9) %>%
-               addPopups(lng = 6.4, lat = 45.7, 
+               addPopups(lng = 6.4, lat = 45.7,	
                          popup = "Aucune donnée de localisation valide à afficher avec les filtres actuels."))
     }
     
     # Définir les couleurs DPE pour la visualisation
-    dpe_colors <- c("A" = "#008000", "B" = "#339900", "C" = "#66B200", 
+    dpe_colors <- c("A" = "#008000", "B" = "#339900", "C" = "#66B200",	
                     "D" = "#FFCC00", "E" = "#FF9933", "F" = "#FF6666", "G" = "#CC0000")
     
     # S'assurer que 'etiquette_dpe' est un facteur pour un bon mappage des couleurs
     data$etiquette_dpe <- factor(data$etiquette_dpe, levels = names(dpe_colors))
     
-    # Créez le contenu des popups 
+    # Créez le contenu des popups	
     content <- paste(sep = "<br/>",
                      paste("<b>DPE:</b>", data$etiquette_dpe),
                      paste("Surface:", data$surface_habitable_logement, "m²"),
@@ -460,16 +464,16 @@ server <- function(input, output, session) {
       addTiles() %>% # Ajout du fond de carte OpenStreetMap
       
       # Centrer la vue sur la zone où se trouvent les points
-      fitBounds(lng1 = min(data$longitude, na.rm = TRUE), lat1 = min(data$latitude, na.rm = TRUE), 
+      fitBounds(lng1 = min(data$longitude, na.rm = TRUE), lat1 = min(data$latitude, na.rm = TRUE),	
                 lng2 = max(data$longitude, na.rm = TRUE), lat2 = max(data$latitude, na.rm = TRUE)) %>%
       
       # Ajout des marqueurs circulaires avec l'option de clustering
       addCircleMarkers(
         lng = ~longitude,
         lat = ~latitude,
-        popup = content, 
+        popup = content,	
         radius = 5,
-        color = "black", 
+        color = "black",	
         fillColor = ~dpe_colors[etiquette_dpe], # Utilisation des couleurs DPE
         stroke = TRUE,
         weight = 1,
@@ -483,7 +487,7 @@ server <- function(input, output, session) {
                 title = "Étiquette DPE")
   })
   
-  # Output pour la Corrélation 
+  # Output pour la Corrélation	
   output$Correlation_ges_dpe <- renderPlot({
     
     # Utiliser les données filtrées
@@ -515,37 +519,54 @@ server <- function(input, output, session) {
       scale_fill_gradient(low = "lightgray", high = "red")
   })
   
-  # Répartition des DPE par département
-  output$Repartition_dpe_classe_par_departement <- renderPlot({
+  # NOUVEL OUTPUT : Boîte à moustaches de la surface par classe DPE
+  output$boxplot_surface_par_dpe <- renderPlot({
     
     df <- filtered_data()
     
-    # Vérification que la colonne "etiquette_dpe" existe
-    if(!"etiquette_dpe" %in% colnames(df)) {
-      validate(need(FALSE, "Aucune colonne 'etiquette_dpe' trouvée dans les données."))
+    # S'assurer que les étiquettes DPE sont des facteurs ordonnés
+    dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
+    df$etiquette_dpe <- factor(df$etiquette_dpe, levels = dpe_levels)
+    
+    # Définir les couleurs DPE (celles utilisées dans la carte pour la cohérence)
+    dpe_colors <- c("A" = "#008000", "B" = "#339900", "C" = "#66B200",	
+                    "D" = "#FFCC00", "E" = "#FF9933", "F" = "#FF6666", "G" = "#CC0000")
+    
+    # Filtrer les valeurs de surface trop extrêmes pour une meilleure visualisation (par exemple > 300m²)
+    df_filtered_box <- df %>%
+      filter(surface_habitable_logement < 500)
+    
+    # Vérification que des données existent
+    if(nrow(df_filtered_box) == 0) {
+      return(
+        ggplot() +
+          labs(title = "Aucune donnée disponible pour la boîte à moustaches (ou surface filtrée).") +
+          theme_void()
+      )
     }
     
-    # Intégration des données
-    df_summary <- df %>%
-      group_by(code_dept, etiquette_dpe) %>%
-      summarise(nb_logements = n(), .groups = "drop")
-    
-    # Création du graphique
-    ggplot(df_summary, aes(x = etiquette_dpe, y = nb_logements, fill = code_dept)) +
-      geom_bar(stat = "identity", position = "dodge") +
-      scale_fill_brewer(palette = "Set1", name = "Département") +
+    # Création de la boîte à moustaches
+    ggplot(df_filtered_box, aes(x = etiquette_dpe, y = surface_habitable_logement, fill = etiquette_dpe)) +
+      
+      # --- CODE PRINCIPAL POUR LA BOÎTE À MOUSTACHES ---
+      geom_boxplot(outlier.shape = 1) + # Ajouter les points aberrants
+      
+      # Application des couleurs DPE
+      scale_fill_manual(values = dpe_colors, name = "Classe DPE") +
+      
       labs(
-        title = "Répartition des classes DPE par département",
+        title = "Distribution de la Surface Habitable par Classe DPE",
         x = "Classe DPE",
-        y = "Nombre de logements"
+        y = "Surface habitable (m²)"
       ) +
       theme_minimal(base_size = 14) +
       theme(
         plot.title = element_text(face = "bold", hjust = 0.5),
         axis.title = element_text(face = "bold"),
-        legend.position = "bottom"
+        legend.position = "none" # La légende n'est pas nécessaire si l'axe x est étiqueté
       )
   })
+  # FIN DU NOUVEL OUTPUT
   
   output$table_doc <- DT::renderDataTable({
     
@@ -581,5 +602,5 @@ server <- function(input, output, session) {
   
 }
 
-# Exécution de l'application 
+# Exécution de l'application	
 shinyApp(ui = ui, server = server)
