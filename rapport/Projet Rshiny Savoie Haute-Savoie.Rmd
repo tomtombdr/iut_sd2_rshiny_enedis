@@ -161,7 +161,7 @@ df_box <- df_filtered %>%
   filter(surface_habitable_logement < 500, !is.na(etiquette_dpe))
 
 if (nrow(df_box) > 0) {
-  ggplot(df_box, aes(x = etiquette_dpe, y = surface_habitable_logement, fill = etiquette_dpe)) +
+  p_box <- ggplot(df_box, aes(x = etiquette_dpe, y = surface_habitable_logement, fill = etiquette_dpe)) +
     geom_boxplot(outlier.shape = 1) +
     scale_fill_manual(values = dpe_colors, name = "Classe DPE") +
     labs(
@@ -175,6 +175,11 @@ if (nrow(df_box) > 0) {
       axis.title = element_text(face = "bold"),
       legend.position = "none"
     )
+
+  htmltools::div(
+    style = "display: flex; justify-content: center; align-items: center; margin: 20px 0;",
+    ggplotly(p_box, tooltip = c("x", "y"))
+  )
 } else {
   ggplot() +
     labs(title = "Aucune donnée disponible pour la boîte à moustaches (ou surface filtrée).") +
@@ -185,3 +190,39 @@ if (nrow(df_box) > 0) {
 
 Le DPE n'est pas uniquement un indicateur sur les performances d'isolation ou de chauffage, mais aussi sur le taux d'émission de gaz à effet de serre. 
 En effet, on peut donc croiser les deux informations sur un nuage de points pour étudier les correspondances entre les notes de DPE et les scores en termes d'émissions de gaz à effet de serre.
+
+Si on étudie de plus près ce graphique, on peut voir que les notes des DPE et émissions de gaz à effet de serre sont très souvent corrélées. Il y a une tendance mineure qui s'observe par le dessin de cet alignement de points qui correspondent les uns aux autres entre les notes de DPE et d'émissions. 
+Mais cependant, cette tendance n'est pas pour la totalité des cas. On remarque que les note des émissions sont en général plus élevées que celles des DPE, ce qui nous fait une concentration de logements plus forte vers le bas du graphique, notaement pour le croisement des DPE en D et E avec la note GES (Gaz à Effet de Serre) B.
+
+Maintenant, si on regarde la comparaison des 2 départements, on peut voir que pour la Savoie, le schéma reste quasiment le même que lorsque les 2 départements sont combiné, alors que pour son voisin la Haute-Savoie, on observe que le phénomène de correspondance (c'est à dire un DPE en A pour un GES en A) est beaucoup plus présent, ce qui montre une meilleure régularité pour les logements qui n'ont pas des écarts entre le DPE et la production de gaz à effet de serre.
+
+Enfin, on peut aussi remarquer que les notes ne sont pas disperçées de partout sur le graphique, avec notaement pour les logements avec un DPE en A qui ne sont uniquement que des logements avec un GES en A, ou encore les logements avec un DPE en G qui n'ont pas un GES supérieur à C. Cela a du sens car un bâtiment neuf et bien conçu ne va généralement pas produire énormément de gaz à effet de serre et à l'inverse un logement énergivore va produire plus de ces gaz.
+
+```{r, echo=FALSE, message=FALSE, fig.align='center', fig.width=7, fig.height=5}
+
+    dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
+    df_filtered$etiquette_dpe <- factor(df_filtered$etiquette_dpe, levels = dpe_levels)
+    df_filtered$etiquette_ges <- factor(df_filtered$etiquette_ges, levels = dpe_levels)
+    
+p_corr <- ggplot(df_filtered, aes(x = etiquette_dpe, y = etiquette_ges)) +
+  geom_count(aes(size = after_stat(n)), color = "#1a5276", alpha = 0.8) +
+  scale_size_area(max_size = 14) +
+  labs(
+    title = "Corrélation entre Étiquette DPE et GES",
+    x = "Étiquette DPE",
+    y = "Étiquette GES", 
+    size = "Effectif"
+  ) +
+  theme_light(base_size = 18) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title = element_text(face = "bold"),
+    axis.text = element_text(face = "bold"),
+     plot.margin = margin(10, 10, 10, 10)
+  )
+
+htmltools::div(
+  style = "display: flex; justify-content: center; align-items: center; margin: 20px 0;",
+  ggplotly(p_corr, tooltip = c("x", "y", "size"))
+)
+```
