@@ -134,4 +134,10 @@ Si on se penche sur nos 2 départements, on peut constater que le territoire gé
 
 Pour les villes, les immeubles et autres logements sont plus classiques avec des matériaux plus modernes et des modes de chauffage plus divers avec du gaz ou encore de l'électrique. Cela donne donc un paysage particulier à ces 2 départements qui se partage entre villes modernes et campagnes plus traditionnelles en termes d'habitations.
 
-Si on regarde cela du côté des notes DPE, on peut observer plusieurs choses. Tout d'abord, les notations pour l'ensemble des 2 départements 
+Si on regarde cela du côté des notes DPE, on peut observer plusieurs choses. Tout d'abord, les notations pour l'ensemble des 2 départements sont plutôt réparties sur les lettres C,D et E comme nous pouvons le voir sur le graphique suivant. 
+Le graphique nous montre donc les logements selon leur classe DPE mais aussi comment sont ils répartis par surface habitable. Cela nous donne donc une double analyse à faire sur ces notes.
+
+En effet, si on prend le cas des notes A et B, les boîtes du graphique sont sur des surfaces entre 25 et 125 m² et avec très peu de valeurs extrêmes. Ces surfaces correspondent majoritairement à des appartement qui sont donc plus petits et souvent construits avec des matériaux plus récents. Mais cela peut aussi être le cas de petites maisons récentes qui sont de plus en plus nombreuses en France. 
+En revanche, pour les notes C,D,E,F et G, les valeurs extrêmes, c'est à dire les logements avec de plus grandes surfaces sont beaucoup plus nombreux, ce qui peut s'expliquer par les maisons qui sont plus anciennes que les appartements ou encore par le fait que de plus grandes surfaces sont plus dures à bien isolées.
+
+Maintenant, si l'on regarde d'un point de vue plus local, on observe que 
