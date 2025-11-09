@@ -16,6 +16,8 @@ Puis le dossier "data_preparation" qui contient le script pour la création du f
 
 Il y a ensuite le dossier "docs" qui contient les documentations technique et fonctionnelle qui servent à comprendre comment utiliser l'application Rshiny et quel est son contenu.
 
-Le dossier "rapport" contient le README, qui présente le github et son organisation, ainsi que le rapport d'étude statistique " Projet Rshiny Savoie Haute-Savoie".
+Le dossier "rapport" contient le rapport d'étude statistique " Projet Rshiny Savoie Haute-Savoie".
+
+Pour expliquer comment s'organise le github, un fichier README est présent à la suite de tous les dossiers.
 
 Enfin, une vidéo tutorielle mettra en avant les fonctionnalitées de l'application pour avoir une visibilité optimale de l'application et de comment l'installer sur sa machine. 
