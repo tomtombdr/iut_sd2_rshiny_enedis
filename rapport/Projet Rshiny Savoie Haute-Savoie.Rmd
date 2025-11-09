@@ -1,21 +1,22 @@
----
-output:
-  html_document: default
-  pdf_document: default
----
+
 ```{r setup,eval=TRUE, echo=FALSE, message = FALSE,include=FALSE}
 options(repos = c(CRAN = "https://cloud.r-project.org")) # Définition d'un mirroir pour le Cran
 
 # Chargement des packages
-#install.packages(c("ggplot2","leaflet","shiny","dplyr", "sf"))
+# install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib"))
 library(ggplot2)
 library(dplyr)
 library(sf)
 library(RColorBrewer)
+library(plotly)
+library(DT)
+library(bslib)
+library(rsconnect)
+library(leaflet)
 
 # Import des dataframes pour les graphiques
 
-df_total <- read.csv2("DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
+df_total <- read.csv2("../DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
 
 df_filtered <- df_total
 
@@ -43,57 +44,94 @@ Ce rapport statistique comparare les DPE réalisés dans les départements de la
 On peut donc se poser la question de savoir dans quelle mesure la performance énergétique des logements diffère-t-elle entre la Savoie et la Haute-Savoie, et quels facteurs (climatiques, structurels ou socio-économiques) peuvent expliquer ces écarts observés dans les DPE ?
 
 
-## Contexte géographique et sociale
+## Contexte géographique et social
 
 Les départements de la Savoie et de la Haute-Savoie sont assez similaires sur leur géographie mais ont quelques différences au niveau de leur compositions des ménages.
 En effet, la Savoie a un PIB par habitant de 32 800 € contre 29 700 € pour la Haute-Savoie, selon la CCI pour l'année 2024. Cette différence est notable, notamment pour les questions d'énergie et de logement qui sont les dépenses les plus importantes des foyers en France.
 
 De plus, le type de logement est un peu différent entre les 2 départements avec environ 9000 maisons contre plus de 31000 appartements, ce qui fait un rapport d'environ une maison pour 3 appartements. Cette répartition va donc jouer sur les DPE de l'ensemble des départements mais la surface des logements va aussi contribuer à la répartition des DPE. 
-On peut voir sur les graphiques suivants que les maisons ont majoritairement une surface comprise entre 50 et 160 m² alors que les appartements sont plutôt entre 25 et 75 m² pour la grande majorité. On observe aussi des valeurs assez extrême pour les appartements avec plus de 200 m² alors que pour les maisons, ces valeurs extrêmes sont autour des 300 m² et beaucoup plus représentées.
+On peut voir sur les graphiques suivants que les maisons ont majoritairement une surface comprise entre 50 et 160 m² alors que les appartements sont plutôt entre 25 et 75 m² pour la grande majorité. On observe aussi des valeurs extrêmes pour les appartements avec plus de 200 m² alors que pour les maisons, ces valeurs extrêmes sont autour des 300 m² et beaucoup plus représentées.
 
-```{r, eval=TRUE, echo=FALSE, message = FALSE, fig.align='center', fig.width=6, fig.height=4}
-    p <- ggplot(df_maison, aes(x = surface_habitable_logement)) +
-      geom_histogram(
-        breaks = seq(0, 350, length.out = 11),
-        fill = "red",
-        color = "black"
-      )
-    
-    p +
-      scale_x_continuous(limits = c(0, 350)) +
-      labs(
-        title = "Répartition des surfaces habitables de maisons",
-        x = "Surface habitable (m²)",
-        y = "Effectifs"
-      ) +
-      theme_light(base_size = 14) +
-      theme(
-        plot.title = element_text(face = "bold", hjust = 0.5),
-        axis.title = element_text(face = "bold"),
-        panel.grid.minor = element_blank()
-      )
+```{r, eval=TRUE, echo=FALSE, message = FALSE}
+p_maison <- ggplot(df_maison, aes(x = surface_habitable_logement)) +
+geom_histogram(
+breaks = seq(0, 350, length.out = 11),
+fill = "red",
+color = "black"
+) +
+labs(
+title = "Répartition des surfaces habitables de maisons",
+x = "Surface habitable (m²)",
+y = "Effectifs"
+) +
+theme_light(base_size = 14)
+
+htmltools::div(style = "text-align;", ggplotly(p_maison))
+
 ```
 
-```{r, eval=TRUE, echo=FALSE, message = FALSE, fig.align='center', fig.width=6, fig.height=4}
-    p <- ggplot(df_appartement, aes(x = surface_habitable_logement)) +
-      geom_histogram(
-        breaks = seq(0, 250, length.out = 11),
-        fill = "red",
-        color = "black"
-      )
-    
-    p +
-      scale_x_continuous(limits = c(0, 250)) +
-      labs(
-        title =  "Répartition des surfaces habitables de appartements",
-        x = "Surface habitable (m²)",
-        y = "Effectifs"
-      ) +
-      theme_light(base_size = 14) +
-      theme(
-        plot.title = element_text(face = "bold", hjust = 0.5),
-        axis.title = element_text(face = "bold"),
-        panel.grid.minor = element_blank()
-      )
+```{r, eval=TRUE, echo=FALSE, message = FALSE}
+p_appart <- ggplot(df_appartement, aes(x = surface_habitable_logement)) +
+geom_histogram(
+breaks = seq(0, 250, length.out = 11),
+fill = "red",
+color = "black"
+) +
+labs(
+title = "Répartition des surfaces habitables des appartements",
+x = "Surface habitable (m²)",
+y = "Effectifs"
+) +
+theme_light(base_size = 14)
+
+htmltools::div(style = "text-align;", ggplotly(p_appart))
+
 ```
 
+
+Pour ce qui est de la répartition entre les 2 départements, on observe que les surfaces des maisons sont assez similaires entre la Savoie et la Haute-Savoie, avec une petite tendance à la hausse pour les maisons du 74 qui sont légèrements plus représentées sur des surfaces de 100 à 200 m², ainsi que dans les valeurs extrêmes à plus de 300 m².
+
+En revanche, en ce qui concerne les appartements, les différences sont bien plus marquées. En effet, pour la Savoie, plus de 6000 appartements on une surface entre 25 et 50 m² environ et seulement 6500 appartements ont une surfaces supérieures alors que pour la Haute-Savoie, le pic est sur les appartements de la même surface que pour la savoie avec 5000 appartements, mais il y a plus de 9000 appartements d'un surface supérieure, ce qui fait un tier de plus que pour la Savoie.
+
+Si on regarde cette carte, on peut observer d'où proviennent les logements soumis à la notation du DPE dans les 2 départements. Les zonnes les plus représentées sont la zone de Chambéry et Aix-les-bains, qui est une zone très dynamique avec le lac du Bourget, mais aussi Annecy, Salanches et la frontières Suisse. Toutes ces zones sont de grandes zones d'activités et qui ont donc une grande concentration de personnes et de logements. Ce sont des zones géographiques particulières avec des lacs, des montagnes et un climat très froid l'hiver.
+
+```{r, eval=TRUE, echo=FALSE, message = FALSE}
+data <- df_filtered %>%
+mutate(
+x_lambert = as.numeric(gsub(",", ".", coordonnee_cartographique_x_ban)),
+y_lambert = as.numeric(gsub(",", ".", coordonnee_cartographique_y_ban))
+) %>%
+filter(!is.na(x_lambert) & !is.na(y_lambert))
+
+sf_points <- st_as_sf(data, coords = c("x_lambert", "y_lambert"), crs = 2154) %>%
+st_transform(4326)
+
+coords <- st_coordinates(sf_points)
+
+htmltools::div(
+  style = "display: flex; justify-content: center; align-items: center; margin: 20px 0;",
+  leaflet() %>%
+    addTiles() %>%
+    addCircleMarkers(
+      lng = coords[, 1],
+      lat = coords[, 2],
+      radius = 3,
+      color = "red",
+      stroke = FALSE,
+      fillOpacity = 0.6
+    )
+)
+
+```
+
+
+
+##Analyse des classes DPE sur les logements
+
+Le diagnostic de performance énergétique est aujourd'hui un indicateur clé dans un logement, que ce soit pour la vente ou location, ou même pour les contrats énergétiques avec les différents fournisseurs d'énergie. Le climat et le territoire jouent beaucoup sur cet indicateur, mais le logement en lui même rest le principal facteur de la bonne ou mauvaise note. Pour obtenir un DPE de bonne qualité,cela se traduit en général par une bonne isolation du logement, par les murs et les fenêtres, mais aussi par un mode de chauffage récent et bien entretenu.
+
+Si on se penche sur nos 2 départements, on peut constater que le territoire géographique va largement influencer les logements dans leur construction et leur conception, avec des choix de matériaux et de chauffage particulier. Ainsi, beaucoup de maison notamment sont en pierre ou en bois car ce sont des matériaux très présents et très travaillés dans la région. Mais c'est aussi pour leur résistance aux intempéries et au climat de la région qu'ils sont majoritairement choisis, et souvent accompagné d'un chauffage au bois pour les maisons.
+
+Pour les villes, les immeubles et autres logements sont plus classiques avec des matériaux plus modernes et des modes de chauffage plus divers avec du gaz ou encore de l'électrique. Cela donne donc un paysage particulier à ces 2 départements qui se partage entre villes modernes et campagnes plus traditionnelles en termes d'habitations.
+
+Si on regarde cela du côté des notes DPE, on peut observer plusieurs choses. Tout d'abord, les notations pour l'ensemble des 2 départements 
