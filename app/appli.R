@@ -1,5 +1,5 @@
 # app.R
-# install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib")) 
+# install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib", "shinymanager")) 
 
 library(ggplot2)
 library(shiny)
@@ -8,8 +8,9 @@ library(dplyr)
 library(sf)
 library(RColorBrewer)
 library(DT)
-library(bslib) # Package nécessaire pour les thèmes dynamiques
+library(bslib)
 library(rsconnect)
+library(shinymanager) # <--- AJOUTÉ : Package pour la sécurité
 
 # S'assurez que le fichier CSV est dans le bon chemin
 df_total <- read.csv2(file = "../DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
@@ -43,7 +44,17 @@ my_theme <- bs_theme(
   bootswatch = "cosmo" # Thème par défaut
 )
 
-ui <- fluidPage(
+# DÉFINITION DES CRÉDENTIELS POUR shinymanager
+usersapp <- data.frame(
+  user = c("admin"), # Utilisation de c() pour être sûr
+  password = c("admin"), # Utilisation de c() pour être sûr
+  admin = TRUE,
+  comment = "page d'identification pour acceder à l'application",
+  stringsAsFactors = FALSE # Correction du nom
+)
+
+# L'UI principale est renommée 'ui_content'
+ui_content <- fluidPage( # <--- NOUVEAU NOM DE L'UI DE L'APPLICATION
   
   # --- THÈME BSLIB RÉACTIF ---
   theme = my_theme,	
@@ -153,7 +164,7 @@ ui <- fluidPage(
                  
                  # CHANGEMENT : REMPLACEMENT DE L'HISTOGRAMME EN BARRES PAR LA BOÎTE À MOUSTACHES
                  h3("Distribution de la Surface Habitable par Classe DPE"),
-                 plotOutput("boxplot_surface_par_dpe") 
+                 plotOutput("boxplot_surface_par_dpe")	
                  # NOUVEL ID
         ),
         
@@ -193,17 +204,28 @@ ui <- fluidPage(
   )
 )
 
+# APPLICATION DE LA SÉCURITÉ : L'UI publique devient l'interface de connexion
+ui <- secure_app(ui_content)
+
 ## Définition de l'Interface Server (server)
 
 server <- function(input, output, session) {
   
+  # Initialisation du module de sécurité : VÉRIFIE LES IDENTIFIANTS
+  res_auth <- secure_server(
+    check_credentials = check_credentials(usersapp) # <--- UTILISATION DIRECTE DE usersapp
+  )
+  
+  # Supprimé : output$auth_output (affichait les détails de connexion, non nécessaire dans l'app finale)
+  
   # --- LOGIQUE DE CHANGEMENT DE THÈME (AJOUT) ---
+  # Le reste de votre logique de serveur
+  
   observeEvent(input$theme_selector, {
     session$setCurrentTheme(
       bs_theme_update(my_theme, bootswatch = input$theme_selector)
     )
   })
-  # ---------------------------------------------
   
   # Génération de l'UI pour le filtre par Code Postal (ID: code_postal_filtre)
   output$code_postal_ui <- renderUI({
