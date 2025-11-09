@@ -10,7 +10,7 @@ library(RColorBrewer)
 library(DT)
 library(bslib)
 library(rsconnect)
-library(shinymanager) # <--- AJOUTÉ : Package pour la sécurité
+library(shinymanager) # Package pour la sécurité
 
 # S'assurez que le fichier CSV est dans le bon chemin
 df_total <- read.csv2(file = "../DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
@@ -54,11 +54,10 @@ usersapp <- data.frame(
 )
 
 # L'UI principale est renommée 'ui_content'
-ui_content <- fluidPage( # <--- NOUVEAU NOM DE L'UI DE L'APPLICATION
+ui_content <- fluidPage( 
   
-  # --- THÈME BSLIB RÉACTIF ---
+  # THÈME BSLIB RÉACTIF 
   theme = my_theme,	
-  # --------------------------
   
   # Titre de l'application
   titlePanel("Présentation du DPE sur les logements neufs et existants en Savoie et Haute-Savoie"),
@@ -70,7 +69,7 @@ ui_content <- fluidPage( # <--- NOUVEAU NOM DE L'UI DE L'APPLICATION
     sidebarPanel(
       width = 3,
       
-      # --- CONTRÔLE DE SÉLECTION DU THÈME (AJOUT) ---
+      # CONTRÔLE DE SÉLECTION DU THÈME 
       selectInput("theme_selector", "Changer de Thème :",
                   choices = c(
                     "Cosmo (Clair Moderne)" = "cosmo",
@@ -81,8 +80,7 @@ ui_content <- fluidPage( # <--- NOUVEAU NOM DE L'UI DE L'APPLICATION
                   ),
                   selected = "cosmo"),
       hr(),
-      # ---------------------------------------------
-      
+
       # Ajout logo Enedis
       tags$img(
         src = "https://www.plogonnec.fr/wp-content/uploads/2022/04/enedis-logo-D7DA244D2C-seeklogo.com_.png",
@@ -228,7 +226,7 @@ server <- function(input, output, session) {
   
   # Supprimé : output$auth_output (affichait les détails de connexion, non nécessaire dans l'app finale)
   
-  # --- LOGIQUE DE CHANGEMENT DE THÈME (AJOUT) ---
+  #  LOGIQUE DE CHANGEMENT DE THÈME
   # Le reste de votre logique de serveur
   
   observeEvent(input$theme_selector, {
@@ -360,7 +358,7 @@ server <- function(input, output, session) {
   })
   
   
-  # --- LOGIQUE DE GÉNÉRATION DES GRAPHIQUES (Pour la fonction downloadHandler) ---
+  # LOGIQUE DE GÉNÉRATION DES GRAPHIQUES (Pour la fonction downloadHandler)
   
   # Fonction pour générer le graphique de répartition des surfaces des maisons
   generate_surface_maison_plot <- reactive({
@@ -548,14 +546,14 @@ server <- function(input, output, session) {
       )
   })
   
-  # --- LOGIQUE DE RENDU DES GRAPHIQUES (Pour l'affichage dans l'UI) ---
+  # LOGIQUE DE RENDU DES GRAPHIQUES (Pour l'affichage dans l'UI)
   
   output$Répartition_surface_maison <- renderPlot({ generate_surface_maison_plot() })
   output$Répartition_surface_appartement <- renderPlot({ generate_surface_appartement_plot() })
   output$Correlation_ges_dpe <- renderPlot({ generate_correlation_plot() })
   output$boxplot_surface_par_dpe <- renderPlot({ generate_boxplot_dpe() })
   
-  # --- LOGIQUE D'EXPORTATION (downloadHandler) ---
+  # LOGIQUE D'EXPORTATION (downloadHandler)
   
   # 1. Exportation du graphique de la répartition des surfaces des maisons
   output$download_surface_maison <- downloadHandler(
@@ -598,7 +596,7 @@ server <- function(input, output, session) {
     }
   )
   
-  # --- Reste de la logique du serveur ---
+  # Reste de la logique du serveur
   
   # Output pour la Carte Leaflet
   output$dpe_map <- renderLeaflet({
