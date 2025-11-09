@@ -527,7 +527,7 @@ server <- function(input, output, session) {
     # Création de la boîte à moustaches
     ggplot(df_filtered_box, aes(x = etiquette_dpe, y = surface_habitable_logement, fill = etiquette_dpe)) +
       
-      # --- CODE PRINCIPAL POUR LA BOÎTE À MOUSTACHES ---
+      # CODE PRINCIPAL POUR LA BOÎTE À MOUSTACHES
       geom_boxplot(outlier.shape = 1) + # Ajouter les points aberrants
       
       # Application des couleurs DPE
