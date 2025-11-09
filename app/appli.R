@@ -1,5 +1,5 @@
 # app.R
-# install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib")) 
+# install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib", "shinymanager")) 
 
 library(ggplot2)
 library(shiny)
@@ -8,8 +8,9 @@ library(dplyr)
 library(sf)
 library(RColorBrewer)
 library(DT)
-library(bslib) # Package nécessaire pour les thèmes dynamiques
+library(bslib)
 library(rsconnect)
+library(shinymanager) # <--- AJOUTÉ : Package pour la sécurité
 
 # S'assurez que le fichier CSV est dans le bon chemin
 df_total <- read.csv2(file = "../DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
@@ -43,7 +44,17 @@ my_theme <- bs_theme(
   bootswatch = "cosmo" # Thème par défaut
 )
 
-ui <- fluidPage(
+# DÉFINITION DES CRÉDENTIELS POUR shinymanager
+usersapp <- data.frame(
+  user = c("admin"), # Utilisation de c() pour être sûr
+  password = c("admin"), # Utilisation de c() pour être sûr
+  admin = TRUE,
+  comment = "page d'identification pour acceder à l'application",
+  stringsAsFactors = FALSE # Correction du nom
+)
+
+# L'UI principale est renommée 'ui_content'
+ui_content <- fluidPage( # <--- NOUVEAU NOM DE L'UI DE L'APPLICATION
   
   # --- THÈME BSLIB RÉACTIF ---
   theme = my_theme,	
@@ -110,8 +121,13 @@ ui <- fluidPage(
         # Onglet 1 : Comparaison territoire	
         tabPanel("Comparaison territoire",
                  h3("Répartition des surfaces habitables des maisons"),
+                 # AJOUT DU BOUTON DE TÉLÉCHARGEMENT POUR LE GRAPHIQUE 1
+                 downloadButton("download_surface_maison", "Exporter en PNG 🖼️"), 
                  plotOutput("Répartition_surface_maison"),
+                 hr(),
                  h3("Répartition des surfaces habitables des appartements"),
+                 # AJOUT DU BOUTON DE TÉLÉCHARGEMENT POUR LE GRAPHIQUE 2
+                 downloadButton("download_surface_appartement", "Exporter en PNG 🖼️"),
                  plotOutput("Répartition_surface_appartement")),
         
         # Onglet 2 : Carte avec clustering
@@ -149,11 +165,16 @@ ui <- fluidPage(
                  ),
                  
                  h3("Corrélation entre les Étiquettes Énergie et Climat"),
+                 # AJOUT DU BOUTON DE TÉLÉCHARGEMENT POUR LE GRAPHIQUE 3
+                 downloadButton("download_correlation", "Exporter en PNG 🖼️"),
                  plotOutput("Correlation_ges_dpe"),
+                 hr(),
                  
                  # CHANGEMENT : REMPLACEMENT DE L'HISTOGRAMME EN BARRES PAR LA BOÎTE À MOUSTACHES
                  h3("Distribution de la Surface Habitable par Classe DPE"),
-                 plotOutput("boxplot_surface_par_dpe") 
+                 # AJOUT DU BOUTON DE TÉLÉCHARGEMENT POUR LE GRAPHIQUE 4
+                 downloadButton("download_boxplot_dpe", "Exporter en PNG 🖼️"),
+                 plotOutput("boxplot_surface_par_dpe")	
                  # NOUVEL ID
         ),
         
@@ -193,17 +214,28 @@ ui <- fluidPage(
   )
 )
 
+# APPLICATION DE LA SÉCURITÉ : L'UI publique devient l'interface de connexion
+ui <- secure_app(ui_content)
+
 ## Définition de l'Interface Server (server)
 
 server <- function(input, output, session) {
   
+  # Initialisation du module de sécurité : VÉRIFIE LES IDENTIFIANTS
+  res_auth <- secure_server(
+    check_credentials = check_credentials(usersapp) # <--- UTILISATION DIRECTE DE usersapp
+  )
+  
+  # Supprimé : output$auth_output (affichait les détails de connexion, non nécessaire dans l'app finale)
+  
   # --- LOGIQUE DE CHANGEMENT DE THÈME (AJOUT) ---
+  # Le reste de votre logique de serveur
+  
   observeEvent(input$theme_selector, {
     session$setCurrentTheme(
       bs_theme_update(my_theme, bootswatch = input$theme_selector)
     )
   })
-  # ---------------------------------------------
   
   # Génération de l'UI pour le filtre par Code Postal (ID: code_postal_filtre)
   output$code_postal_ui <- renderUI({
@@ -328,8 +360,10 @@ server <- function(input, output, session) {
   })
   
   
-  # Output pour l'Histogramme de Répartition des Surfaces (73 et/ou 74)	
-  output$Répartition_surface_maison <- renderPlot({
+  # --- LOGIQUE DE GÉNÉRATION DES GRAPHIQUES (Pour la fonction downloadHandler) ---
+  
+  # Fonction pour générer le graphique de répartition des surfaces des maisons
+  generate_surface_maison_plot <- reactive({
     
     # Utiliser les données filtrées
     df_filtered <- filtered_data()
@@ -381,7 +415,8 @@ server <- function(input, output, session) {
       )
   })
   
-  output$Répartition_surface_appartement <- renderPlot({
+  # Fonction pour générer le graphique de répartition des surfaces des appartements
+  generate_surface_appartement_plot <- reactive({
     
     # Utiliser les données filtrées
     df_filtered <- filtered_data()
@@ -432,6 +467,138 @@ server <- function(input, output, session) {
         panel.grid.minor = element_blank()
       )
   })
+  
+  # Fonction pour générer le graphique de corrélation
+  generate_correlation_plot <- reactive({
+    
+    # Utiliser les données filtrées
+    df_filtered <- filtered_data()
+    
+    # S'assurer que les étiquettes sont des facteurs ordonnés pour le graphique
+    dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
+    df_filtered$etiquette_dpe <- factor(df_filtered$etiquette_dpe, levels = dpe_levels)
+    df_filtered$etiquette_ges <- factor(df_filtered$etiquette_ges, levels = dpe_levels)
+    
+    ggplot(df_filtered, aes(x = etiquette_dpe, y = etiquette_ges)) +
+      # Utilisation de geom_count pour visualiser la densité de points
+      geom_count(aes(size = after_stat(n)), color = "#1a5276", alpha = 0.8) +
+      scale_size_area(max_size = 18) +
+      labs(
+        title = "Corrélation entre Étiquette DPE (Énergie) et GES (Climat)",
+        x = "Étiquette DPE (Consommation Énergétique)",
+        y = "Étiquette GES (Émissions de Gaz à Effet de Serre)",
+        size = "Effectif"
+      ) +
+      theme_light(base_size = 14) +
+      theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        # Centrer les titres d'axes si possible
+        axis.text = element_text(face = "bold")
+      ) +
+      # Ajout d'une échelle de couleur pour l'effet de compte (si désiré)
+      scale_fill_gradient(low = "lightgray", high = "red")
+  })
+  
+  # Fonction pour générer le graphique de boîte à moustaches
+  generate_boxplot_dpe <- reactive({
+    
+    df <- filtered_data()
+    
+    # S'assurer que les étiquettes DPE sont des facteurs ordonnés
+    dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
+    df$etiquette_dpe <- factor(df$etiquette_dpe, levels = dpe_levels)
+    
+    # Définir les couleurs DPE (celles utilisées dans la carte pour la cohérence)
+    dpe_colors <- c("A" = "#008000", "B" = "#339900", "C" = "#66B200",	
+                    "D" = "#FFCC00", "E" = "#FF9933", "F" = "#FF6666", "G" = "#CC0000")
+    
+    # Filtrer les valeurs de surface trop extrêmes pour une meilleure visualisation (par exemple > 300m²)
+    df_filtered_box <- df %>%
+      filter(surface_habitable_logement < 500)
+    
+    # Vérification que des données existent
+    if(nrow(df_filtered_box) == 0) {
+      return(
+        ggplot() +
+          labs(title = "Aucune donnée disponible pour la boîte à moustaches (ou surface filtrée).") +
+          theme_void()
+      )
+    }
+    
+    # Création de la boîte à moustaches
+    ggplot(df_filtered_box, aes(x = etiquette_dpe, y = surface_habitable_logement, fill = etiquette_dpe)) +
+      
+      # --- CODE PRINCIPAL POUR LA BOÎTE À MOUSTACHES ---
+      geom_boxplot(outlier.shape = 1) + # Ajouter les points aberrants
+      
+      # Application des couleurs DPE
+      scale_fill_manual(values = dpe_colors, name = "Classe DPE") +
+      
+      labs(
+        title = "Distribution de la Surface Habitable par Classe DPE",
+        x = "Classe DPE",
+        y = "Surface habitable (m²)"
+      ) +
+      theme_minimal(base_size = 14) +
+      theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold"),
+        legend.position = "none" # La légende n'est pas nécessaire si l'axe x est étiqueté
+      )
+  })
+  
+  # --- LOGIQUE DE RENDU DES GRAPHIQUES (Pour l'affichage dans l'UI) ---
+  
+  output$Répartition_surface_maison <- renderPlot({ generate_surface_maison_plot() })
+  output$Répartition_surface_appartement <- renderPlot({ generate_surface_appartement_plot() })
+  output$Correlation_ges_dpe <- renderPlot({ generate_correlation_plot() })
+  output$boxplot_surface_par_dpe <- renderPlot({ generate_boxplot_dpe() })
+  
+  # --- LOGIQUE D'EXPORTATION (downloadHandler) ---
+  
+  # 1. Exportation du graphique de la répartition des surfaces des maisons
+  output$download_surface_maison <- downloadHandler(
+    filename = function() {
+      paste("repartition_surface_maison-", Sys.Date(), ".png", sep="")
+    },
+    content = function(file) {
+      # Assurez-vous que l'objet plot a une hauteur et une largeur raisonnables
+      ggsave(file, plot = generate_surface_maison_plot(), device = "png", width = 10, height = 7, units = "in")
+    }
+  )
+  
+  # 2. Exportation du graphique de la répartition des surfaces des appartements
+  output$download_surface_appartement <- downloadHandler(
+    filename = function() {
+      paste("repartition_surface_appartement-", Sys.Date(), ".png", sep="")
+    },
+    content = function(file) {
+      ggsave(file, plot = generate_surface_appartement_plot(), device = "png", width = 10, height = 7, units = "in")
+    }
+  )
+  
+  # 3. Exportation du graphique de corrélation DPE/GES
+  output$download_correlation <- downloadHandler(
+    filename = function() {
+      paste("correlation_dpe_ges-", Sys.Date(), ".png", sep="")
+    },
+    content = function(file) {
+      ggsave(file, plot = generate_correlation_plot(), device = "png", width = 10, height = 7, units = "in")
+    }
+  )
+  
+  # 4. Exportation du graphique de boîte à moustaches
+  output$download_boxplot_dpe <- downloadHandler(
+    filename = function() {
+      paste("boxplot_surface_dpe-", Sys.Date(), ".png", sep="")
+    },
+    content = function(file) {
+      ggsave(file, plot = generate_boxplot_dpe(), device = "png", width = 10, height = 7, units = "in")
+    }
+  )
+  
+  # --- Reste de la logique du serveur ---
   
   # Output pour la Carte Leaflet
   output$dpe_map <- renderLeaflet({
@@ -488,87 +655,7 @@ server <- function(input, output, session) {
                 title = "Étiquette DPE")
   })
   
-  # Output pour la Corrélation	
-  output$Correlation_ges_dpe <- renderPlot({
-    
-    # Utiliser les données filtrées
-    df_filtered <- filtered_data()
-    
-    # S'assurer que les étiquettes sont des facteurs ordonnés pour le graphique
-    dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
-    df_filtered$etiquette_dpe <- factor(df_filtered$etiquette_dpe, levels = dpe_levels)
-    df_filtered$etiquette_ges <- factor(df_filtered$etiquette_ges, levels = dpe_levels)
-    
-    ggplot(df_filtered, aes(x = etiquette_dpe, y = etiquette_ges)) +
-      # Utilisation de geom_count pour visualiser la densité de points
-      geom_count(aes(size = after_stat(n)), color = "#1a5276", alpha = 0.8) +
-      scale_size_area(max_size = 18) +
-      labs(
-        title = "Corrélation entre Étiquette DPE (Énergie) et GES (Climat)",
-        x = "Étiquette DPE (Consommation Énergétique)",
-        y = "Étiquette GES (Émissions de Gaz à Effet de Serre)",
-        size = "Effectif"
-      ) +
-      theme_light(base_size = 14) +
-      theme(
-        plot.title = element_text(face = "bold", hjust = 0.5),
-        axis.title = element_text(face = "bold"),
-        # Centrer les titres d'axes si possible
-        axis.text = element_text(face = "bold")
-      ) +
-      # Ajout d'une échelle de couleur pour l'effet de compte (si désiré)
-      scale_fill_gradient(low = "lightgray", high = "red")
-  })
-  
-  # NOUVEL OUTPUT : Boîte à moustaches de la surface par classe DPE
-  output$boxplot_surface_par_dpe <- renderPlot({
-    
-    df <- filtered_data()
-    
-    # S'assurer que les étiquettes DPE sont des facteurs ordonnés
-    dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
-    df$etiquette_dpe <- factor(df$etiquette_dpe, levels = dpe_levels)
-    
-    # Définir les couleurs DPE (celles utilisées dans la carte pour la cohérence)
-    dpe_colors <- c("A" = "#008000", "B" = "#339900", "C" = "#66B200",	
-                    "D" = "#FFCC00", "E" = "#FF9933", "F" = "#FF6666", "G" = "#CC0000")
-    
-    # Filtrer les valeurs de surface trop extrêmes pour une meilleure visualisation (par exemple > 300m²)
-    df_filtered_box <- df %>%
-      filter(surface_habitable_logement < 500)
-    
-    # Vérification que des données existent
-    if(nrow(df_filtered_box) == 0) {
-      return(
-        ggplot() +
-          labs(title = "Aucune donnée disponible pour la boîte à moustaches (ou surface filtrée).") +
-          theme_void()
-      )
-    }
-    
-    # Création de la boîte à moustaches
-    ggplot(df_filtered_box, aes(x = etiquette_dpe, y = surface_habitable_logement, fill = etiquette_dpe)) +
-      
-      # --- CODE PRINCIPAL POUR LA BOÎTE À MOUSTACHES ---
-      geom_boxplot(outlier.shape = 1) + # Ajouter les points aberrants
-      
-      # Application des couleurs DPE
-      scale_fill_manual(values = dpe_colors, name = "Classe DPE") +
-      
-      labs(
-        title = "Distribution de la Surface Habitable par Classe DPE",
-        x = "Classe DPE",
-        y = "Surface habitable (m²)"
-      ) +
-      theme_minimal(base_size = 14) +
-      theme(
-        plot.title = element_text(face = "bold", hjust = 0.5),
-        axis.title = element_text(face = "bold"),
-        legend.position = "none" # La légende n'est pas nécessaire si l'axe x est étiqueté
-      )
-  })
-  # FIN DU NOUVEL OUTPUT
-  
+  # Output pour le Tableau de documentation
   output$table_doc <- DT::renderDataTable({
     
     # Création du tableau de description des champs
