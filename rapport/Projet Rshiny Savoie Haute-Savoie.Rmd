@@ -99,31 +99,40 @@ Si on regarde cette carte, on peut observer d'où proviennent les logements soum
 
 ```{r, eval=TRUE, echo=FALSE, message = FALSE}
 data <- df_filtered %>%
-mutate(
-x_lambert = as.numeric(gsub(",", ".", coordonnee_cartographique_x_ban)),
-y_lambert = as.numeric(gsub(",", ".", coordonnee_cartographique_y_ban))
-) %>%
-filter(!is.na(x_lambert) & !is.na(y_lambert))
+  mutate(
+    x_lambert = as.numeric(gsub(",", ".", coordonnee_cartographique_x_ban)),
+    y_lambert = as.numeric(gsub(",", ".", coordonnee_cartographique_y_ban))
+  ) %>%
+  # 1. Filtre les lignes où les coordonnées Lambert ne sont pas valides
+  filter(!is.na(x_lambert) & !is.na(y_lambert))
 
 sf_points <- st_as_sf(data, coords = c("x_lambert", "y_lambert"), crs = 2154) %>%
-st_transform(4326)
+  st_transform(4326)
 
 coords <- st_coordinates(sf_points)
+
+# 2. Convertit et filtre les coordonnées WGS84 (Longitude/Latitude)
+coords_filtrees <- coords %>%
+  as.data.frame() %>%
+  # Filtre basé sur une boîte englobante raisonnable pour les départements 73/74
+  filter(
+    X >= 5.5 & X <= 7.5,   # Longitude
+    Y >= 45.0 & Y <= 46.5  # Latitude
+  )
 
 htmltools::div(
   style = "display: flex; justify-content: center; align-items: center; margin: 20px 0;",
   leaflet() %>%
     addTiles() %>%
     addCircleMarkers(
-      lng = coords[, 1],
-      lat = coords[, 2],
+      lng = coords_filtrees$X, # Utilisation des coordonnées filtrées
+      lat = coords_filtrees$Y, # Utilisation des coordonnées filtrées
       radius = 3,
       color = "red",
       stroke = FALSE,
       fillOpacity = 0.6
     )
 )
-
 ```
 
 
