@@ -32,10 +32,15 @@ df_appartement <- df_filtered %>%
 ---
 title: "Rapport statistique sur les DPE de la Savoie et la Haute-Savoie"
 author: "Evan Lane et Tom Baudry"
-output: html_document
+output: 
+  html_document:
+    css: style.css
+    toc: true
+    toc_float: true
+    number_sections: true
 ---
-
-## **Introduction**
+<body>
+<h2>Introduction</h2>
 
 Dans un contexte de transition énergétique et de lutte contre le réchauffement climatique, l'impact énergétique des bâtiments est un enjeu majeur pour les territoires. Le Diagnostic de Performance Énergétique (DPE) est un outil essentiel permettant d’évaluer la consommation d’énergie et l’impact environnemental des logements. Il permet d'étudier l'ensemble du parc immobilier et sert de référence pour orienter les politiques publiques d’efficacité énergétique, de rénovation et de réduction des émissions de gaz à effet de serre.
 
@@ -46,7 +51,7 @@ On peut donc se poser la question de savoir dans quelle mesure la performance é
 
 
 
-## **Contexte géographique et social**
+<h3>Contexte géographique et social</h3>
 
 Les départements de la Savoie et de la Haute-Savoie sont assez similaires sur leur géographie mais ont quelques différences au niveau de leur compositions des ménages.
 En effet, la Savoie a un PIB par habitant de 32 800 € contre 29 700 € pour la Haute-Savoie, selon la CCI pour l'année 2024. Cette différence est notable, notamment pour les questions d'énergie et de logement qui sont les dépenses les plus importantes des foyers en France.
@@ -139,7 +144,7 @@ htmltools::div(
 
 
 
-## **Analyse des classes DPE sur les logements**
+<h3>Analyse des classes DPE sur les logements</h3>
 
 Le diagnostic de performance énergétique est aujourd'hui un indicateur clé dans un logement, que ce soit pour la vente ou location, ou même pour les contrats énergétiques avec les différents fournisseurs d'énergie. Le climat et le territoire jouent beaucoup sur cet indicateur, mais le logement en lui même rest le principal facteur de la bonne ou mauvaise note. Pour obtenir un DPE de bonne qualité,cela se traduit en général par une bonne isolation du logement, par les murs et les fenêtres, mais aussi par un mode de chauffage récent et bien entretenu.
 
@@ -236,7 +241,7 @@ htmltools::div(
 )
 ```
 
-## **Conclusion**
+<h2>Conclusion</h2>
 
 L’analyse des diagnostics de performance énergétique (DPE) des logements en Savoie et en Haute-Savoie met en évidence plusieurs différences importantes sur la structure et la performance énergétique du parc immobilier de ces deux départements alpins.
 
@@ -247,3 +252,4 @@ Ensuite, la comparaison entre les deux territoires révèle que la Haute-Savoie 
 Sur le plan environnemental, la corrélation entre les classes DPE et GES confirme que les logements les plus économes en énergie sont aussi ceux qui émettent le moins de gaz à effet de serre. Cette relation souligne l’importance des politiques publiques visant à encourager la rénovation thermique et la modernisation des systèmes de chauffage, leviers essentiels pour réduire l’empreinte carbone du secteur résidentiel.
 
 En conclusion, ce rapport met en lumière la nécessité d’une politique énergétique différenciée et adaptée aux réalités locales. Si la Haute-Savoie semble déjà engagée dans une dynamique de modernisation, la Savoie dispose d’un fort potentiel d’amélioration, notamment à travers la rénovation du parc ancien. L’ensemble de ces analyses illustre l’intérêt du DPE comme outil d’évaluation, de pilotage et de suivi des politiques territoriales en matière de transition énergétique.
+</body>
