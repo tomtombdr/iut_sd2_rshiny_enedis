@@ -1,107 +1,39 @@
-body {
-  font-family: "Segoe UI", "Helvetica Neue", sans-serif;
-  color: #2c3e50;
-  background-color: #fafafa;
-  line-height: 1.6;
-  margin: 0 auto;
-  max-width: 900px;
-  padding: 40px;
+
+/* Changer la couleur des titres */
+h1, h2, h3 {
+  color: #1a5276;
+  font-weight: bold;
 }
 
-
-h1, h2, h3, h4 {
-  color: #1a5276;
-  font-weight: 700;
+/* Centrer les graphiques */
+.figure {
   text-align: center;
 }
 
-h1 {
-  border-bottom: 3px solid #1a5276;
-  padding-bottom: 8px;
-  margin-bottom: 30px;
+/* Ajouter un fond doux et lisible */
+body {
+  background-color: #f9f9f9;
+  font-family: "Helvetica", sans-serif;
+  color: #222;
+  line-height: 1.6;
 }
 
-h2 {
-  border-bottom: 2px solid #a9cce3;
-  margin-top: 40px;
-  padding-bottom: 4px;
-}
-
-
-p {
-  text-align: justify;
-  margin: 15px 0;
-}
-
-strong {
-  color: #1a5276;
-}
-
-
-.figure, .plotly, .graph-container, .leaflet-container {
-  display: flex;
-  justify-content: center;
-  margin: 30px 0;
-}
-
-img, .plotly html-widget {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-
+/* Styliser les tableaux */
 table {
-  width: 100%;
   border-collapse: collapse;
-  margin: 20px 0;
-  font-size: 15px;
+  width: 90%;
+  margin: auto;
+  background-color: white;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
 }
 
 th {
   background-color: #1a5276;
   color: white;
-  text-align: center;
   padding: 8px;
 }
 
 td {
-  background-color: #ffffff;
-  border: 1px solid #dcdcdc;
-  text-align: center;
   padding: 8px;
-}
-
-tr:nth-child(even) td {
-  background-color: #f2f6f9;
-}
-
-
-pre, code {
-  background-color: #f5f7fa;
-  border-left: 4px solid #1a5276;
-  padding: 10px;
-  display: block;
-  border-radius: 4px;
-  font-size: 14px;
-  overflow-x: auto;
-}
-
-
-blockquote {
-  background-color: #eef5fb;
-  border-left: 5px solid #1a5276;
-  margin: 20px 0;
-  padding: 10px 15px;
-  font-style: italic;
-  color: #2e4053;
-}
-
-
-footer {
-  text-align: center;
-  margin-top: 40px;
-  font-size: 13px;
-  color: #7b8a8b;
+  border-bottom: 1px solid #ddd;
 }
