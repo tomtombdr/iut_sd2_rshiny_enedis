@@ -1,5 +1,5 @@
 # app.R
-install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib", "shinymanager")) 
+#install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib", "shinymanager")) 
 
 library(ggplot2)
 library(shiny)
@@ -107,7 +107,7 @@ ui_content <- fluidPage(
                   selected = "les_deux"),
       
       hr(), # Ligne de séparation
-      p(em("Les graphiques et la carte ci-dessous sont mis à jour en fonction de ces filtres."))
+      p(em("Les graphiques et la carte des différents onglets sont mis à jour en fonction de ces filtres."))
     ),
     
     # Panneau principal pour les onglets
