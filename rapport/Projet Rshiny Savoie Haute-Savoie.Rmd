@@ -226,3 +226,15 @@ htmltools::div(
   ggplotly(p_corr, tooltip = c("x", "y", "size"))
 )
 ```
+
+## **Conclusion**
+
+L’analyse des diagnostics de performance énergétique (DPE) des logements en Savoie et en Haute-Savoie met en évidence plusieurs différences importantes sur la structure et la performance énergétique du parc immobilier de ces deux départements alpins.
+
+Tout d’abord, la typologie des logements influence fortement les résultats observés. Les appartements, plus nombreux et de surface généralement plus petite, présentent globalement de meilleures performances énergétiques que les maisons, plus grandes et souvent plus anciennes. Cette différence structurelle s’explique à la fois par la période de construction, la qualité de l’isolation, les matériaux de construction et le type de chauffage utilisé, les logements collectifs récents bénéficiant d’une meilleure efficacité thermique.
+
+Ensuite, la comparaison entre les deux territoires révèle que la Haute-Savoie dispose d’un parc immobilier légèrement plus performant que celui de la Savoie. Plusieurs facteurs peuvent expliquer cet écart : une proportion plus importante de constructions récentes, des revenus moyens plus élevés favorisant les travaux de rénovation énergétique, ainsi qu’une dynamique économique soutenue liée à la proximité de la Suisse. À l’inverse, la Savoie présente encore un nombre significatif de logements anciens, parfois peu rénovés, notamment dans les zones rurales et montagneuses.
+
+Sur le plan environnemental, la corrélation entre les classes DPE et GES confirme que les logements les plus économes en énergie sont aussi ceux qui émettent le moins de gaz à effet de serre. Cette relation souligne l’importance des politiques publiques visant à encourager la rénovation thermique et la modernisation des systèmes de chauffage, leviers essentiels pour réduire l’empreinte carbone du secteur résidentiel.
+
+En conclusion, ce rapport met en lumière la nécessité d’une politique énergétique différenciée et adaptée aux réalités locales. Si la Haute-Savoie semble déjà engagée dans une dynamique de modernisation, la Savoie dispose d’un fort potentiel d’amélioration, notamment à travers la rénovation du parc ancien. L’ensemble de ces analyses illustre l’intérêt du DPE comme outil d’évaluation, de pilotage et de suivi des politiques territoriales en matière de transition énergétique.
