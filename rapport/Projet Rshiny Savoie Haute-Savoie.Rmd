@@ -3,7 +3,7 @@
 options(repos = c(CRAN = "https://cloud.r-project.org")) # Définition d'un mirroir pour le Cran
 
 # Chargement des packages
-# install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib"))
+#install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib","plotly"))
 library(ggplot2)
 library(dplyr)
 library(sf)
