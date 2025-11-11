@@ -1,5 +1,5 @@
 # app.R
-#install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib", "shinymanager")) 
+# install.packages(c("ggplot2","rsconnect","leaflet","shiny","dplyr", "sf", "RColorBrewer", "DT", "bslib", "shinymanager")) 
 
 library(ggplot2)
 library(shiny)
@@ -13,54 +13,68 @@ library(rsconnect)
 library(shinymanager) # Package pour la sécurité
 
 # S'assurez que le fichier CSV est dans le bon chemin
+# ATTENTION: Assurez-vous que le chemin est correct sur votre machine!
 df_total <- read.csv2(file = "../DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
 
 ## Préparation des données pour les filtres
-
-# S'assurer que 'code_insee_ban' est en caractère
 df_total$code_insee_ban <- as.character(df_total$code_insee_ban)
-
-# S'assurer que 'code_postal_ban' est en caractère (essentiel pour startsWith et éviter les erreurs)
 df_total$code_postal_ban <- as.character(df_total$code_postal_ban)
-
-# Conversion de la surface en numérique (R gère la virgule si read.csv2 est utilisé, mais une conversion explicite est plus sûre)
 df_total$surface_habitable_logement <- as.numeric(gsub(",", ".", df_total$surface_habitable_logement))
-
-# Création d'une colonne pour le code départemental (les deux premiers chiffres)
 df_total$code_dept <- substr(df_total$code_insee_ban, 1, 2)
-
-# Définition des options pour le filtre "neufancien"
 neufancien_choices <- c("Les deux" = "les_deux", "Ancien" = "ancien", "Neuf" = "neuf")
-
-# Définition des options pour le filtre "DPE"
 dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
 
 
 ## Définition de l'Interface Utilisateur (UI)
 
-# Définir un thème de base (obligatoire pour bslib)
+# --- NOUVELLE PARTIE POUR INJECTER LE CSS DANS BSLIB ---
+
+# 1. Lire le contenu du fichier CSS personnalisé (doit être dans le dossier www)
+# Vérifiez que 'www/style.css' existe!
+if (file.exists("www/style.css")) {
+  custom_css_rules <- readLines("www/style.css", encoding = "UTF-8") %>%
+    paste(collapse = "\n")
+} else {
+  warning("Le fichier 'www/style.css' n'a pas été trouvé. Les styles personnalisés ne seront pas appliqués.")
+  custom_css_rules <- "" # Assure que la variable n'est pas vide en cas d'erreur
+}
+
+
+# 2. Définir un thème de base (obligatoire pour bslib)
 my_theme <- bs_theme(
   version = 5,
   bootswatch = "cosmo" # Thème par défaut
 )
 
+# 3. Injecter le CSS personnalisé dans le thème bslib
+my_theme <- bs_add_rules(my_theme, custom_css_rules)
+
+# --------------------------------------------------------
+
 # DÉFINITION DES CRÉDENTIELS POUR shinymanager
 usersapp <- data.frame(
-  user = c("admin"), # Utilisation de c() pour être sûr
-  password = c("admin"), # Utilisation de c() pour être sûr
+  user = c("admin"),
+  password = c("admin"),
   admin = TRUE,
   comment = "page d'identification pour acceder à l'application",
-  stringsAsFactors = FALSE # Correction du nom
+  stringsAsFactors = FALSE
 )
 
 # L'UI principale est renommée 'ui_content'
 ui_content <- fluidPage( 
   
-  # THÈME BSLIB RÉACTIF 
+  # REMPLACÉ: Suppression du tags$head(includeCSS())
+  
+  # THÈME BSLIB RÉACTIF (Contient maintenant les règles CSS personnalisées)
   theme = my_theme,	
   
   # Titre de l'application
-  titlePanel("Présentation du DPE sur les logements neufs et existants en Savoie et Haute-Savoie"),
+  titlePanel(
+    tags$div(
+      "Présentation du DPE sur les logements neufs et existants en Savoie et Haute-Savoie", 
+      class = "title" # Cette classe est stylisée dans style.css
+    )
+  ),
   
   # Utilisation d'un layout avec barre latérale
   sidebarLayout(
@@ -68,19 +82,20 @@ ui_content <- fluidPage(
     # Panneau de la barre latérale pour les filtres (commun à tous les onglets)
     sidebarPanel(
       width = 3,
+      class = "sidebar-panel", # Ajout d'une classe pour styliser si besoin
       
-      # CONTRÔLE DE SÉLECTION DU THÈME 
+      # CONTRÔLE DE SÉLECTION DU THÈME	
       selectInput("theme_selector", "Changer de Thème :",
                   choices = c(
-                    "Cosmo (Clair Moderne)" = "cosmo",
-                    "Darkly (Sombre)" = "darkly",
-                    "Lumen (Minimaliste)" = "lumen",
-                    "Superhero (Sombre Audacieux)" = "superhero",
-                    "Minty (Clair Vert)" = "minty"
+                    "Cosmo" = "cosmo",
+                    "Darkly" = "darkly",
+                    "Lumen" = "lumen",
+                    "Superhero" = "superhero",
+                    "Minty" = "minty"
                   ),
                   selected = "cosmo"),
       hr(),
-
+      
       # Ajout logo Enedis
       tags$img(
         src = "https://www.plogonnec.fr/wp-content/uploads/2022/04/enedis-logo-D7DA244D2C-seeklogo.com_.png",
@@ -120,7 +135,7 @@ ui_content <- fluidPage(
         tabPanel("Comparaison territoire",
                  h3("Répartition des surfaces habitables des maisons"),
                  # AJOUT DU BOUTON DE TÉLÉCHARGEMENT POUR LE GRAPHIQUE 1
-                 downloadButton("download_surface_maison", "Exporter en PNG 🖼️"), 
+                 downloadButton("download_surface_maison", "Exporter en PNG 🖼️"),	
                  plotOutput("Répartition_surface_maison"),
                  hr(),
                  h3("Répartition des surfaces habitables des appartements"),
@@ -224,20 +239,17 @@ server <- function(input, output, session) {
     check_credentials = check_credentials(usersapp) # <--- UTILISATION DIRECTE DE usersapp
   )
   
-  # Supprimé : output$auth_output (affichait les détails de connexion, non nécessaire dans l'app finale)
-  
-  #  LOGIQUE DE CHANGEMENT DE THÈME
-  # Le reste de votre logique de serveur
-  
+  # LOGIQUE DE CHANGEMENT DE THÈME
   observeEvent(input$theme_selector, {
-    session$setCurrentTheme(
-      bs_theme_update(my_theme, bootswatch = input$theme_selector)
-    )
+    # Charger le thème sélectionné par l'utilisateur
+    new_theme <- bs_theme_update(my_theme, bootswatch = input$theme_selector)
+    
+    # Appliquer le nouveau thème (qui inclut toujours le custom CSS)
+    session$setCurrentTheme(new_theme)
   })
   
   # Génération de l'UI pour le filtre par Code Postal (ID: code_postal_filtre)
   output$code_postal_ui <- renderUI({
-    
     # Rendre la fonction robuste en gérant les NA et les chaînes vides
     valid_codes <- df_total$code_postal_ban[!is.na(df_total$code_postal_ban) & df_total$code_postal_ban != ""]
     
@@ -246,13 +258,10 @@ server <- function(input, output, session) {
     
     # Filtrer la liste des codes postaux en fonction de la sélection du département
     if (dept_selection == "73") {
-      # Codes postaux qui commencent par '73'
       choices <- sort(unique(valid_codes[startsWith(valid_codes, "73")]))
     } else if (dept_selection == "74") {
-      # Codes postaux qui commencent par '74'
       choices <- sort(unique(valid_codes[startsWith(valid_codes, "74")]))
     } else {
-      # Si "tous" est sélectionné, on prend tous les codes postaux des deux départements (73 et 74)
       choices <- sort(unique(valid_codes[startsWith(valid_codes, "73") | startsWith(valid_codes, "74")]))
     }
     
@@ -657,7 +666,6 @@ server <- function(input, output, session) {
   output$table_doc <- DT::renderDataTable({
     
     # Création du tableau de description des champs
-    
     doc <- data.frame(
       Champ = names(df_total),
       Description = c(
