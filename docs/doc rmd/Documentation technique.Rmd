@@ -1,7 +1,7 @@
 ---
 title: "Documentation technique"
 author: "Evan Lane et Tom Baudry"
-output: html_document
+output: md_document
 ---
 
 <h3>**Présentation de l'application**</h3>
