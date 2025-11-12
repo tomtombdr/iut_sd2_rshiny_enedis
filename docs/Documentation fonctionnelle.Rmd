@@ -1,7 +1,7 @@
 ---
 title: "Documentation fonctionnelle"
 author: "Evan Lane et Tom Baudry"
-output: html_document
+output: md_document
 ---
 
 <h3>**Présentation de l'application**</h3>
@@ -14,7 +14,7 @@ Pour commencer, l'application est composée de 4 onglets :
   
   - L'onglet "Carte avec clustering", qui montre une carte intéractive sur l'emplacement géographique des logements en Savoie et Haute-Savoie. Elle permet de cibler géographiquement une zone et aussi de voir la répartition des logements sur le territoire, notamment pour en savoir plus sur l'environnement naturel (montagne, lac, ville,...). Il y a une possibilité de filtrer sur les différentes classes de DPE avec des coches (A à G).
   
-  - L'onglet "Analyse DPE", qui va présenter les différents axes d'études des DPE entre les 2 départements, avec des graphiques divers. C'est le coeur de l'étude statistique qui va permettre d'observer les différences et ressemblences entre ces départements frontaliers au niveau des DPE et des gaz à effet de serre. Il y a la possibilité de filtrer sur la superficie du logement avec une échelle graduée (de 0 à 500 m²).
+  - L'onglet "Analyse DPE", qui va présenter les différents axes d'études des DPE entre les 2 départements, avec des graphiques divers (nuage de points, boîte à moustaches et nuage de points avec axes filtrables). C'est le coeur de l'étude statistique qui va permettre d'observer les différences et ressemblences entre ces départements frontaliers au niveau des DPE et des gaz à effet de serre. Il y a la possibilité de filtrer sur la superficie du logement avec une échelle graduée (de 0 à 500 m²).
   
   - L'onglet "Contexte", qui va présenter les données utilisées pour l'étude, avec leur signification, tout cela résumé dans un tableau et avec les 2 liens vers la base de données open source.
    
