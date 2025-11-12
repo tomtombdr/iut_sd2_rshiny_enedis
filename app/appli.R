@@ -12,17 +12,35 @@ library(bslib)
 library(rsconnect)
 library(shinymanager) # Package pour la sécurité
 
-# S'assurez que le fichier CSV est dans le bon chemin
+# S'assurer que le fichier CSV est dans le bon chemin
 # ATTENTION: Assurez-vous que le chemin est correct sur votre machine!
 df_total <- read.csv2(file = "../DATA/données_projet_DPE.csv", stringsAsFactors = FALSE)
 
 ## Préparation des données pour les filtres
 df_total$code_insee_ban <- as.character(df_total$code_insee_ban)
 df_total$code_postal_ban <- as.character(df_total$code_postal_ban)
+# Conversion des colonnes avec virgule comme séparateur décimal
 df_total$surface_habitable_logement <- as.numeric(gsub(",", ".", df_total$surface_habitable_logement))
+# NOUVEAU: Conversion de la hauteur sous plafond
+df_total$hauteur_sous_plafond <- as.numeric(gsub(",", ".", df_total$hauteur_sous_plafond))
+# Ajout des conversions pour les coordonnées si elles sont utilisées
+df_total$coordonnee_cartographique_x_ban <- as.numeric(gsub(",", ".", df_total$coordonnee_cartographique_x_ban))
+df_total$coordonnee_cartographique_y_ban <- as.numeric(gsub(",", ".", df_total$coordonnee_cartographique_y_ban))
+
 df_total$code_dept <- substr(df_total$code_insee_ban, 1, 2)
 neufancien_choices <- c("Les deux" = "les_deux", "Ancien" = "ancien", "Neuf" = "neuf")
 dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
+
+# Choix pour les listes déroulantes du nuage de points
+scatter_choices <- c(
+  "Surface habitable (m²)" = "surface_habitable_logement",
+  "Année de construction" = "annee_construction",
+  "Hauteur sous plafond (m)" = "hauteur_sous_plafond",
+  "Étiquette DPE" = "etiquette_dpe",
+  "Étiquette GES" = "etiquette_ges",
+  "Type de bâtiment" = "type_batiment",
+  "Classe d'âge (Neuf/Ancien)" = "neufancien"
+)
 
 
 ## Définition de l'Interface Utilisateur (UI)
@@ -187,8 +205,29 @@ ui_content <- fluidPage(
                  h3("Distribution de la Surface Habitable par Classe DPE"),
                  # AJOUT DU BOUTON DE TÉLÉCHARGEMENT POUR LE GRAPHIQUE 4
                  downloadButton("download_boxplot_dpe", "Exporter en PNG 🖼️"),
-                 plotOutput("boxplot_surface_par_dpe")	
-                 # NOUVEL ID
+                 plotOutput("boxplot_surface_par_dpe"),	
+                 
+                 # --- NUAGE DE POINTS INTERACTIF ---
+                 hr(),
+                 h3("Analyse de Corrélation Personnalisée (Nuage de Points)"),
+                 downloadButton("download_scatter_plot", "Exporter en PNG 🖼️"),
+                 fluidRow(
+                   column(6,
+                          selectInput("scatter_x_var", "Variable X (Abscisse) :",
+                                      choices = scatter_choices,
+                                      selected = "surface_habitable_logement")
+                   ),
+                   column(6,
+                          selectInput("scatter_y_var", "Variable Y (Ordonnée) :",
+                                      choices = scatter_choices,
+                                      selected = "annee_construction")
+                   )
+                 ),
+                 # AFFICHAGE DU COEFFICIENT DE CORRÉLATION (MAINTENANT AVEC renderUI)
+                 htmlOutput("correlation_coefficient_output"), 
+                 
+                 plotOutput("scatter_plot_output") # ID pour le nuage de points
+                 # --------------------------------------------------------
         ),
         
         # Onglet 4 : Contexte
@@ -297,7 +336,7 @@ server <- function(input, output, session) {
         filter(neufancien == input$neufancien_filtre)
     }
     
-    # FILTRE 4: Classe DPE (CheckBox) - Utilisé sur l'onglet 2
+    # FILTRE 4: Classe DPE (CheckBox) - Utilisé sur l'onglet 2 (affecte aussi l'onglet 3)
     if (!is.null(input$dpe_classe_filtre) && length(input$dpe_classe_filtre) > 0) {
       data <- data %>%
         filter(etiquette_dpe %in% input$dpe_classe_filtre)
@@ -321,12 +360,11 @@ server <- function(input, output, session) {
     # Utiliser les données filtrées
     data <- filtered_data()
     
-    # Conversion des coordonnées X/Y en numérique pour Leaflet.
+    # Conversion des coordonnées X/Y en numérique (déjà fait dans le setup global, mais on réutilise pour la robustesse)
     data <- data %>%
       mutate(
-        # Remplacement de la virgule par le point pour la conversion
-        x_lambert = as.numeric(gsub(",", ".", coordonnee_cartographique_x_ban)),
-        y_lambert = as.numeric(gsub(",", ".", coordonnee_cartographique_y_ban))
+        x_lambert = coordonnee_cartographique_x_ban, # Colonne déjà convertie dans le setup
+        y_lambert = coordonnee_cartographique_y_ban  # Colonne déjà convertie dans le setup
       )
     
     # Filtrer les lignes avec des coordonnées NA ou non valides après la première conversion
@@ -339,7 +377,6 @@ server <- function(input, output, session) {
     }
     
     # Conversion du Lambert 93 (EPSG:2154) au WGS84 (EPSG:4326)
-    # On ignore les warnings liés aux NA qui ont déjà été gérés
     suppressWarnings({
       sf_points <- data %>%
         st_as_sf(coords = c("x_lambert", "y_lambert"), crs = 2154) %>% # Définir le CRS d'origine (Lambert 93)
@@ -520,7 +557,7 @@ server <- function(input, output, session) {
     dpe_colors <- c("A" = "#008000", "B" = "#339900", "C" = "#66B200",	
                     "D" = "#FFCC00", "E" = "#FF9933", "F" = "#FF6666", "G" = "#CC0000")
     
-    # Filtrer les valeurs de surface trop extrêmes pour une meilleure visualisation (par exemple > 300m²)
+    # Filtrer les valeurs de surface trop extrêmes pour une meilleure visualisation (par exemple > 500m²)
     df_filtered_box <- df %>%
       filter(surface_habitable_logement < 500)
     
@@ -554,6 +591,187 @@ server <- function(input, output, session) {
         legend.position = "none" # La légende n'est pas nécessaire si l'axe x est étiqueté
       )
   })
+  
+  
+  # LOGIQUE DE GÉNÉRATION DU NUAGE DE POINTS INTERACTIF (dans l'onglet 3)
+  generate_scatter_plot <- reactive({
+    
+    # Données filtrées
+    df_plot <- filtered_data() %>%
+      select(input$scatter_x_var, input$scatter_y_var) %>%
+      # Supprimer les NA pour le graphique
+      na.omit() 
+    
+    # Filtrage des outliers extrêmes pour les variables numériques pour une meilleure visualisation
+    if (input$scatter_x_var %in% c("surface_habitable_logement")) {
+      df_plot <- df_plot %>% filter(df_plot[[input$scatter_x_var]] < 500)
+    }
+    if (input$scatter_y_var %in% c("surface_habitable_logement")) {
+      df_plot <- df_plot %>% filter(df_plot[[input$scatter_y_var]] < 500)
+    }
+    
+    
+    # Vérification si des données existent
+    if(nrow(df_plot) == 0) {
+      return(
+        ggplot() +
+          labs(title = "Aucune donnée disponible avec les filtres et variables sélectionnés.") +
+          theme_void()
+      )
+    }
+    
+    # Définir les variables d'axe
+    x_var_name <- input$scatter_x_var
+    y_var_name <- input$scatter_y_var
+    
+    # Récupérer les labels (utiliser les noms de la liste scatter_choices)
+    x_label <- names(scatter_choices[scatter_choices == x_var_name])
+    y_label <- names(scatter_choices[scatter_choices == y_var_name])
+    
+    # Définir les variables pour le graphique
+    df_plot$x <- df_plot[[x_var_name]]
+    df_plot$y <- df_plot[[y_var_name]]
+    
+    # DPE/GES levels pour ordonner correctement
+    dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
+    
+    # Mettre en facteur si nécessaire pour un meilleur rendu
+    if (x_var_name %in% c("etiquette_dpe", "etiquette_ges")) {
+      df_plot$x <- factor(df_plot$x, levels = dpe_levels)
+    } else if (x_var_name %in% c("type_batiment", "neufancien")) {
+      df_plot$x <- factor(df_plot$x)
+    }
+    
+    if (y_var_name %in% c("etiquette_dpe", "etiquette_ges")) {
+      df_plot$y <- factor(df_plot$y, levels = dpe_levels)
+    } else if (y_var_name %in% c("type_batiment", "neufancien")) {
+      df_plot$y <- factor(df_plot$y)
+    }
+    
+    # Création du graphique de base
+    p <- ggplot(df_plot, aes(x = x, y = y)) +
+      labs(
+        title = paste("Corrélation entre", x_label, "et", y_label),
+        x = x_label,
+        y = y_label
+      ) +
+      theme_minimal(base_size = 14) +
+      theme(
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        axis.title = element_text(face = "bold")
+      )
+    
+    # Logique de visualisation:
+    
+    # 1. Les deux axes sont numériques
+    if (is.numeric(df_plot$x) && is.numeric(df_plot$y)) {
+      p <- p +
+        geom_point(alpha = 0.5, color = "#1a5276", size = 2) +
+        geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed")
+    }
+    # 2. Un ou les deux axes sont catégoriels/discrets (utiliser geom_count ou jitter)
+    else {
+      # Si les deux sont des étiquettes (DPE, GES, Type, Neuf/Ancien)
+      if (is.factor(df_plot$x) && is.factor(df_plot$y)) {
+        p <- p +
+          geom_count(aes(size = after_stat(n)), color = "#1a5276", alpha = 0.8) +
+          scale_size_area(max_size = 18) +
+          labs(size = "Effectif")
+      } else {
+        # Sinon, utiliser jitter pour visualiser la répartition (numérique vs catégoriel)
+        p <- p +
+          geom_point(position = position_jitter(width = 0.3, height = 0.3), 
+                     alpha = 0.5, color = "#1a5276", size = 2)
+      }
+    }
+    
+    return(p)
+  })
+  
+  # Fonction pour calculer et afficher le coefficient de corrélation
+  calculate_correlation <- reactive({
+    req(input$scatter_x_var, input$scatter_y_var)
+    
+    df_corr <- filtered_data()
+    x_var <- input$scatter_x_var
+    y_var <- input$scatter_y_var
+    
+    x_data <- df_corr[[x_var]]
+    y_data <- df_corr[[y_var]]
+    
+    # Exclure les variables purement nominales (non ordonnées) pour Spearman
+    excluded_vars <- c("type_batiment", "neufancien")
+    
+    if (x_var %in% excluded_vars || y_var %in% excluded_vars) {
+      output_text <- paste(
+        "<div style='border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f8f8f8; margin-top: 10px;'>",
+        "<b>Coefficient de Corrélation:</b> Non calculable (variable nominale sélectionnée).",
+        "</div>"
+      )
+      # FIX: Retourner le texte enveloppé dans HTML()
+      return(HTML(output_text))
+    }
+    
+    # Conversion de rang pour les variables DPE/GES ordonnées
+    dpe_levels <- c("A", "B", "C", "D", "E", "F", "G")
+    
+    if (x_var %in% c("etiquette_dpe", "etiquette_ges")) {
+      # Convertir les étiquettes en rang numérique (1 à 7) pour le calcul de corrélation
+      x_data <- as.numeric(factor(x_data, levels = dpe_levels, ordered = TRUE))
+    }
+    if (y_var %in% c("etiquette_dpe", "etiquette_ges")) {
+      y_data <- as.numeric(factor(y_data, levels = dpe_levels, ordered = TRUE))
+    }
+    
+    # Enlever les NA pour la corrélation
+    valid_data <- na.omit(data.frame(x_data, y_data))
+    
+    if (nrow(valid_data) < 2) {
+      output_text <- paste(
+        "<div style='border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f8f8f8; margin-top: 10px;'>",
+        "<b>Coefficient de Corrélation:</b> Impossible (moins de 2 points de données valides).",
+        "</div>"
+      )
+      # FIX: Retourner le texte enveloppé dans HTML()
+      return(HTML(output_text))
+    }
+    
+    # Calculer le coefficient de corrélation de Spearman
+    cor_value <- cor(valid_data$x_data, valid_data$y_data, method = "spearman", use = "complete.obs")
+    
+    # Récupérer les labels
+    x_label <- names(scatter_choices[scatter_choices == x_var])
+    y_label <- names(scatter_choices[scatter_choices == y_var])
+    
+    # Affichage formaté
+    formatted_cor <- format(round(cor_value, 3), nsmall = 3)
+    
+    # Définir la couleur en fonction de la force de la corrélation (standard R > 0.5)
+    cor_color <- ifelse(abs(cor_value) > 0.6, "#c0392b", 
+                        ifelse(abs(cor_value) > 0.3, "#f39c12", "#27ae60"))
+    
+    output_text <- paste(
+      "<div style='border: 1px solid #1a5276; padding: 10px; border-radius: 5px; background-color: #f0f8ff; margin-top: 10px;'>",
+      "<b>Coefficient de Corrélation :</b>", 
+      "<span style='color:", cor_color, "; font-size: 1.1em; font-weight: bold;'>",
+      formatted_cor,
+      "</span>",
+      " (entre ", x_label, " et ", y_label, ")",
+      "</div>"
+    )
+    
+    # FIX: Retourner le texte enveloppé dans HTML() pour un rendu correct
+    return(HTML(output_text))
+  })
+  
+  # Rendu de l'output du coefficient
+  output$correlation_coefficient_output <- renderUI({ 
+    calculate_correlation() 
+  })
+  
+  # Rendu du nuage de points
+  output$scatter_plot_output <- renderPlot({ generate_scatter_plot() })
+  
   
   # LOGIQUE DE RENDU DES GRAPHIQUES (Pour l'affichage dans l'UI)
   
@@ -602,6 +820,16 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       ggsave(file, plot = generate_boxplot_dpe(), device = "png", width = 10, height = 7, units = "in")
+    }
+  )
+  
+  # 5. NOUVEAU: Exportation du nuage de points
+  output$download_scatter_plot <- downloadHandler(
+    filename = function() {
+      paste("nuage_points_", input$scatter_x_var, "_vs_", input$scatter_y_var, "-", Sys.Date(), ".png", sep="")
+    },
+    content = function(file) {
+      ggsave(file, plot = generate_scatter_plot(), device = "png", width = 10, height = 7, units = "in")
     }
   )
   
