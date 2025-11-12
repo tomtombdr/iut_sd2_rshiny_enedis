@@ -10,7 +10,7 @@ Ce projet présente une étude statistique sur les données DPE entre les dépar
 
 Ce projet est composé de plusieurs documents, en commençant par le dossier "DATA" qui rassemble l'ensemble des données utilisées et le fichier source pour la réalisation des graphiques du rapport et de l'application.
 
-Le dossier "app" contient l'pplication Rshiny.
+Le dossier "app" contient l'application Rshiny.
 
 Puis le dossier "data_preparation" qui contient le script pour la création du fichier csv source.
 
@@ -18,6 +18,6 @@ Il y a ensuite le dossier "docs" qui contient les documentations technique et fo
 
 Le dossier "rapport" contient le rapport d'étude statistique " Projet Rshiny Savoie Haute-Savoie".
 
-Pour expliquer comment s'organise le github, un fichier README est présent à la suite de tous les dossiers.
+Pour expliquer comment s'organise le github, le fichier README actuel est présent à la suite de tous les dossiers.
 
 Enfin, une vidéo tutorielle mettra en avant les fonctionnalitées de l'application pour avoir une visibilité optimale de l'application et de comment l'installer sur sa machine. 
