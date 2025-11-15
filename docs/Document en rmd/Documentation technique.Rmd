@@ -1,0 +1,88 @@
+---
+title: "Documentation technique"
+author: "Evan Lane et Tom Baudry"
+output: md_document
+---
+
+<h3>**Présentation de l'application**</h3>
+
+Dans cette documentation technique, nous vous expliquerons comment installer l'application sur votre machine, quels sont les packages qui ont été utilisés pour construire cette apllication, tout ceci accompagné d'un schéma de l'architecture de l'application.
+
+<h4>**Les packages**</h4>
+
+Pour construire cette apllication, nous avons utilisé divers packages et leurs librairies associées :
+
+1. ggplot2
+
+Le package ggplot2 est l’un des outils les plus puissants de R pour la visualisation de données.
+Il repose sur la grammaire des graphiques, permettant de construire des représentations visuelles en couches successives.
+Dans ce projet, il a été utilisé pour produire des histogrammes et boîtes à moustaches représentant la distribution des surfaces habitables et des classes DPE.
+Son intégration avec plotly permet également de rendre certains graphiques interactifs.
+
+2. dplyr
+
+Le package dplyr est dédié à la manipulation et à la transformation de données.
+Il offre une syntaxe claire et efficace reposant sur une série de verbes (filter(), mutate(), summarise(), arrange(), group_by()) facilitant la lecture et la reproductibilité du code.
+Dans ce projet, dplyr a été essentiel pour filtrer les logements selon leur type (maison ou appartement), leur département, ou encore pour nettoyer et préparer les données avant la visualisation.
+
+3. leaflet
+
+La librairie leaflet permet de créer des cartes interactives directement dans R.
+Elle est basée sur la bibliothèque JavaScript du même nom et offre la possibilité d’ajouter des tuiles, des marqueurs, des couches et des légendes.
+Elle a été utilisée pour visualiser la répartition géographique des logements DPE en Savoie et en Haute-Savoie, en affichant chaque logement sous forme de point géolocalisé.
+
+4. sf (Simple Features)
+
+Le package sf est spécialisé dans la gestion des données spatiales.
+Il permet de manipuler, visualiser et transformer des objets géographiques selon différents systèmes de projection.
+Dans ce projet, sf a servi à convertir les coordonnées Lambert 93 (EPSG:2154) en coordonnées WGS84 (EPSG:4326), nécessaires pour l’affichage sur les cartes interactives générées par leaflet.
+
+5. RColorBrewer
+
+RColorBrewer fournit des palettes de couleurs cohérentes et harmonieuses, spécialement conçues pour les graphiques statistiques.
+Il a été utilisé ici pour garantir une cohérence visuelle entre les différentes figures, notamment les couleurs associées aux classes DPE (de A à G), allant du vert au rouge selon la performance énergétique.
+
+6. DT
+
+Le package DT permet d’intégrer des tableaux de données interactifs dans une application Shiny ou un rapport HTML.
+Basé sur la bibliothèque JavaScript DataTables, il facilite la consultation dynamique des données : tri, recherche, pagination et filtrage direct.
+Dans ce projet, il a permis de mettre en valeur et d’explorer le jeu de données brut du DPE.
+
+7. bslib
+
+Le package bslib est utilisé pour la personnalisation de l’apparence graphique d’une application Shiny.
+Il permet d’ajuster les thèmes, couleurs, typographies et styles en s’appuyant sur le framework Bootstrap.
+Son intégration a contribué à donner une cohérence visuelle et une meilleure ergonomie à l’application interactive du projet.
+
+8. rsconnect
+
+rsconnect est la librairie qui facilite le déploiement des applications Shiny sur le web.
+Elle permet de publier directement depuis RStudio vers des plateformes comme shinyapps.io
+ ou un serveur RStudio Connect.
+Elle a été utilisée ici pour rendre accessible l’application interactive en ligne, garantissant sa consultation par différents utilisateurs sans installation locale.
+
+9. shinymanager
+
+Le package shinymanager apporte une couche de sécurité et d’authentification aux applications Shiny.
+Il permet de définir un système de connexion (identifiant et mot de passe), de gérer différents rôles utilisateurs et d’enregistrer les sessions.
+Dans le cadre de ce projet, il a été utilisé pour protéger l’accès à l’application et sécuriser les données traitées.
+
+10. Plotly
+
+Le package Plotly permet de rendre les graphiques interactifs et dynamiques, à partir de visualisations créées avec ggplot2.
+Il offre la possibilité de zoomer, déplacer, afficher des infobulles et d’explorer les données directement dans l’application ou le rapport HTML, rendant ainsi l’analyse plus intuitive et visuelle pour l’utilisateur.
+
+
+<h4>**Installation de l'application**</h4>
+
+Pour pouvoir installer l'application sur sa machine, il faut se rendre sur le GitHub où se trouve le repository contenant l'intégralité du projet.
+Une fois sur le repository, il faut se rendre dans le dossier "app", puis sélectionner l'application. En haut à droite, il y a un bouton téléchargé qui nous permet de télécharger l'application en dur sur notre machine. On peut faire la même chose avec le dossier "DATA" et le fichier "données_projet.csv". Après cela, on peut donc faire tourner l'application avec R studio sur notre machine.
+
+Le lien vers le GitHub est le suivant : <a href = "https://github.com/tomtombdr/iut_sd2_rshiny_enedis">GitHub</a>
+
+
+<h4>**Schéma de l'application**</h4>
+
+Voici un schéma présentant l'architecture de l'application :
+
+<img src = "..\app\www\Schéma_architecture_appli.png"/>
