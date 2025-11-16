@@ -21,5 +21,5 @@ Le dossier "rapport" contient le rapport d'étude statistique " Projet Rshiny Sa
 Pour expliquer comment s'organise le github, le fichier README actuel est présent à la suite de tous les dossiers.
 
 Enfin, une vidéo tutorielle mettra en avant les fonctionnalitées de l'application pour avoir une visibilité optimale de l'application et de comment l'installer sur sa machine. 
-Lien de la vidéo : https://youtu.be/s6_fO-IqkXw
-Lien shinyapps.io : https://tomevaniutsd2rshinyenedis.shinyapps.io/appli/
+<br>Lien de la vidéo : https://youtu.be/s6_fO-IqkXw
+<br>Lien shinyapps.io : https://tomevaniutsd2rshinyenedis.shinyapps.io/appli/
